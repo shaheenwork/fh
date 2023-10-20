@@ -3,6 +3,8 @@ package com.shn.fh.utils
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +12,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import com.shn.fh.R
+import java.util.*
+
 
 class Utils {
 
@@ -60,6 +64,14 @@ class Utils {
                         // Handle failure
                     }
             }
+        }
+
+        fun getCityName(latitude:Double,longitude:Double,context: Context):String{
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
+            val cityName: String = addresses!![0].locality
+
+            return  cityName;
         }
 
 
