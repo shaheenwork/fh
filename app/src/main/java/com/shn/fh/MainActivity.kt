@@ -1,5 +1,6 @@
 package com.shn.fh
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
@@ -18,6 +19,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
+import com.shn.fh.posts.AddNewPostActivity
 import com.shn.fh.posts.PostsFragment
 import com.shn.fh.spots.SpotsFragment
 import com.shn.fh.utils.Consts
@@ -42,7 +44,10 @@ class MainActivity : AppCompatActivity() {
         binding.addBtn.setOnClickListener {
             when (selectedTab) {
                 0 -> {
-                    Toast.makeText(this, "add posts", Toast.LENGTH_LONG).show()
+                    val intent = Intent(this, AddNewPostActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(R.anim.slide_in_bottom, 0)
+
                 }
                 1 -> {
                     Toast.makeText(this, "add spots", Toast.LENGTH_LONG).show()
