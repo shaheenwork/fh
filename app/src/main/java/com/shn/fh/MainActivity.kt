@@ -20,6 +20,7 @@ import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
 import com.shn.fh.posts.PostsFragment
 import com.shn.fh.spots.SpotsFragment
+import com.shn.fh.utils.Consts
 import com.shn.fh.utils.Utils
 
 
@@ -31,11 +32,24 @@ class MainActivity : AppCompatActivity() {
 
 
     private lateinit var placesList: ArrayList<String>
+    private var selectedTab: Int = Consts.TAB_POSTS
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.addBtn.setOnClickListener {
+            when (selectedTab) {
+                0 -> {
+                    Toast.makeText(this, "add posts", Toast.LENGTH_LONG).show()
+                }
+                1 -> {
+                    Toast.makeText(this, "add spots", Toast.LENGTH_LONG).show()
+                }
+            }
+
+        }
 
         firebaseReference = FirebaseReference()
 
@@ -71,15 +85,40 @@ class MainActivity : AppCompatActivity() {
     // This function is used to add items in arraylist and assign
     // the adapter to view pager
     private fun setupViewPager(viewpager: ViewPager) {
-        var adapter: ViewPagerAdapter = ViewPagerAdapter(supportFragmentManager)
+        var adapter = ViewPagerAdapter(supportFragmentManager)
 
-        // LoginFragment is the name of Fragment and the Login
-        // is a title of tab
         adapter.addFragment(PostsFragment(), "Posts")
         adapter.addFragment(SpotsFragment(), "Spots")
 
         // setting adapter to view pager.
         viewpager.setAdapter(adapter)
+
+        viewpager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int
+            ) {
+                // This method is called when the ViewPager is scrolled.
+            }
+
+            override fun onPageSelected(position: Int) {
+
+                when (position) {
+                    0 -> {
+                        selectedTab = Consts.TAB_POSTS
+                    }
+                    1 -> {
+                        selectedTab = Consts.TAB_SPOTS
+                    }
+
+                }
+            }
+
+            override fun onPageScrollStateChanged(state: Int) {
+                // Called when the scroll state changes.
+            }
+        })
     }
 
     override fun onRequestPermissionsResult(
