@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">FH</string>
     <string name="msg_location_permission_required">permission required</string>
+    <string name="msg_something_wrong">Something went wrong</string>
 </resources>

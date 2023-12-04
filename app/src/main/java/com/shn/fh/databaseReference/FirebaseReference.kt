@@ -11,11 +11,11 @@ class FirebaseReference {
     }
 
     fun getRootReference(): DatabaseReference {
-        return databaseReference
+        return databaseReference.child("test1")
     }
 
-    fun getPlacesRef(): DatabaseReference {
-        return databaseReference.child("places")
+    fun getLocationsRef(): DatabaseReference {
+        return getRootReference().child("locations")
     }
 
 }

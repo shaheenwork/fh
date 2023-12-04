@@ -1,25 +1,25 @@
 package com.shn.fh
 
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.SimpleAdapter
 import android.widget.Toast
-import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
-import com.google.android.material.tabs.TabLayout
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
-import com.shn.fh.posts.AddNewPostActivity
+import com.shn.fh.models.Location
 import com.shn.fh.posts.PostsFragment
 import com.shn.fh.spots.SpotsFragment
 import com.shn.fh.utils.Consts
@@ -33,8 +33,27 @@ class MainActivity : AppCompatActivity() {
     private lateinit var firebaseReference: FirebaseReference
 
 
-    private lateinit var placesList: ArrayList<String>
+    private lateinit var locationsList: ArrayList<Location>
     private var selectedTab: Int = Consts.TAB_POSTS
+
+
+    private lateinit var postAdapter: PostAdapter
+    private lateinit var recyclerView: RecyclerView
+
+    private var isLoading = false
+    private var isLastPage = false
+
+    private val postsPerPage = 10
+    private var currentPage = 1
+    private lateinit var selectedLocation:String
+
+
+
+
+
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,17 +61,23 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.addBtn.setOnClickListener {
-            when (selectedTab) {
-                0 -> {
-                    val intent = Intent(this, AddNewPostActivity::class.java)
-                    startActivity(intent)
-                    overridePendingTransition(R.anim.slide_in_bottom, 0)
 
-                }
-                1 -> {
-                    Toast.makeText(this, "add spots", Toast.LENGTH_LONG).show()
-                }
-            }
+           // getPlacesList()
+
+            /* when (selectedTab) {
+                 0 -> {
+                     val intent = Intent(this, AddNewPostActivity::class.java)
+                     startActivity(intent)
+                     overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)
+
+                 }
+                 1 -> {
+                     val intent = Intent(this, AddNewSpotsActivity::class.java)
+                     startActivity(intent)
+                     overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)
+
+                 }
+             }*/
 
         }
 
@@ -60,8 +85,8 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        setUpTabLayout()
-
+        /* setUpTabLayout()
+ */
 
         // ask for location permission
         if (!Utils.checkIfAccessFineLocationGranted(this)) {
@@ -80,12 +105,40 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun setUpTabLayout() {
-        setupViewPager(binding.tabViewpager)
+    private fun setupPostsRecyclerView() {
+        recyclerView = binding.rvPosts
+        postAdapter = PostAdapter()
 
+        val layoutManager = LinearLayoutManager(this)
+        recyclerView.layoutManager = layoutManager
+        recyclerView.adapter = postAdapter
 
-        binding.tabTablayout.setupWithViewPager(binding.tabViewpager)
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val visibleItemCount = layoutManager.childCount
+                val totalItemCount = layoutManager.itemCount
+                val firstVisibleItem = layoutManager.findFirstVisibleItemPosition()
+
+                if (!isLoading && !isLastPage) {
+                    if ((visibleItemCount + firstVisibleItem) >= totalItemCount
+                        && firstVisibleItem >= 0
+                        && totalItemCount >= postsPerPage
+                    ) {
+                        loadMorePosts()
+                    }
+                }
+            }
+        })
     }
+
+    /*  private fun setUpTabLayout() {
+          setupViewPager(binding.tabViewpager)
+
+
+          binding.tabTablayout.setupWithViewPager(binding.tabViewpager)
+      }*/
 
     // This function is used to add items in arraylist and assign
     // the adapter to view pager
@@ -96,13 +149,11 @@ class MainActivity : AppCompatActivity() {
         adapter.addFragment(SpotsFragment(), "Spots")
 
         // setting adapter to view pager.
-        viewpager.setAdapter(adapter)
+        viewpager.adapter = adapter
 
         viewpager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrolled(
-                position: Int,
-                positionOffset: Float,
-                positionOffsetPixels: Int
+                position: Int, positionOffset: Float, positionOffsetPixels: Int
             ) {
                 // This method is called when the ViewPager is scrolled.
             }
@@ -136,9 +187,7 @@ class MainActivity : AppCompatActivity() {
 
                     Utils.getLatLong(this@MainActivity) { latitude, longitude ->
                         Toast.makeText(
-                            this@MainActivity,
-                            "loc: $latitude:: $longitude",
-                            Toast.LENGTH_LONG
+                            this@MainActivity, "loc: $latitude:: $longitude", Toast.LENGTH_LONG
                         ).show()
 
                         Toast.makeText(
@@ -161,23 +210,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupSpinner() {
+    private fun setupLocationSpinner() {
         // Set up spinner
-        //   val items = arrayOf("Item 1", "Item 2", "Item 3")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, placesList)
+        var locationNames: ArrayList<String> = ArrayList()
+
+        for (location in locationsList) {
+            locationNames.add(location.name)
+        }
+        val adapter =
+            ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, locationNames)
         binding.placeSpinner.adapter = adapter
 
         // Handle spinner item selection
         binding.placeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
+                parent: AdapterView<*>?, view: View?, position: Int, id: Long
             ) {
-                val selectedItem = placesList[position]
-                Toast.makeText(this@MainActivity, "Selected: $selectedItem", Toast.LENGTH_SHORT)
-                    .show()
+                selectedLocation = locationsList[position].name
+                onLocationChanged()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -187,19 +237,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getPlacesList() {
-        val databaseReference = firebaseReference.getPlacesRef()
-        placesList = ArrayList()
+        val databaseReference = firebaseReference.getLocationsRef()
+        locationsList = ArrayList()
 
         databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (place in snapshot.children) {
-                    placesList.add(place.value.toString())
+                    locationsList.add(place.getValue(Location::class.java)!!)
                 }
-                setupSpinner()
+                setupPostsRecyclerView()
+                setupLocationSpinner()
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                Toast.makeText(
+                    this@MainActivity,
+                    getString(R.string.msg_something_wrong),
+                    Toast.LENGTH_LONG
+                ).show()
             }
 
         }
@@ -207,6 +262,90 @@ class MainActivity : AppCompatActivity() {
         )
 
     }
+
+
+    // Call this function when the location changes
+    private fun onLocationChanged() {
+        // Reset adapter and load posts for the new location
+        postAdapter.clearPosts()
+        currentPage = 1
+        isLastPage = false
+        loadPosts()
+    }
+
+    private fun loadPosts() {
+        isLoading = true
+        val databaseReference = firebaseReference.getLocationsRef().child(selectedLocation).child("posts")
+        val query = databaseReference.limitToFirst(postsPerPage * currentPage)
+
+        query.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val newPosts = mutableListOf<String>()
+
+                for (postSnapshot in dataSnapshot.children) {
+                    val postId = postSnapshot.key.toString()
+
+                    val post = postId
+                    newPosts.add(post)
+                }
+
+                postAdapter.addPosts(newPosts)
+
+                if (newPosts.size < postsPerPage) {
+                    isLastPage = true
+                }
+
+                isLoading = false
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                isLoading = false
+                // Handle error
+            }
+        })
+    }
+
+    private fun loadMorePosts() {
+        currentPage++
+        loadPosts()
+    }
+
+
+
+
+   /* private fun getPostIDsOfLocation(location: String) {
+        val databaseReference = firebaseReference.getLocationsRef()
+        val postIDsList = ArrayList<String>()
+
+        databaseReference.child(location).child("posts")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (post in snapshot.children) {
+                        postIDsList.add(post.key.toString())
+                    }
+
+                    //show in recyclerview
+                    val recyclerView: RecyclerView = findViewById(R.id.rv_posts)
+                    recyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
+                    recyclerView.adapter = PostAdapter(postIDsList)
+
+
+
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.msg_something_wrong),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+            }
+
+            )
+
+    }*/
 
     class ViewPagerAdapter : FragmentPagerAdapter {
 
@@ -216,17 +355,16 @@ class MainActivity : AppCompatActivity() {
         private final var fragmentTitleList1: ArrayList<String> = ArrayList()
 
         // this is a secondary constructor of ViewPagerAdapter class.
-        public constructor(supportFragmentManager: FragmentManager)
-                : super(supportFragmentManager)
+        public constructor(supportFragmentManager: FragmentManager) : super(supportFragmentManager)
 
         // returns which item is selected from arraylist of fragments.
         override fun getItem(position: Int): Fragment {
-            return fragmentList1.get(position)
+            return fragmentList1[position]
         }
 
         // returns which item is selected from arraylist of titles.
         override fun getPageTitle(position: Int): CharSequence {
-            return fragmentTitleList1.get(position)
+            return fragmentTitleList1[position]
         }
 
         // returns the number of items present in arraylist.
