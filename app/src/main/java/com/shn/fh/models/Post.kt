@@ -1,13 +1,14 @@
 package com.shn.fh.models
 
 data class Post(
-    val postId: String,
-    val userId: String,
-    val foodSpot: String,
-    val dish: String,
-    val description: String,
-    val photoURLs: List<String>,
-    val timestamp: Long,
-    val likes: Int,
-    val comments: Int
+    var postId: String = "",
+    var userId: String = "",
+    var foodSpot: String = "",
+    var dish: String = "",
+    var description: String = "",
+    var photoURLs: List<String> = emptyList(),
+    var timestamp: Long = 0,
+    var likes: Int = 0,
+    var comments: Int = 0
 )
+

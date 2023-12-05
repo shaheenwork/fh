@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.SimpleAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -20,6 +19,7 @@ import com.google.firebase.database.ValueEventListener
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
 import com.shn.fh.models.Location
+import com.shn.fh.models.Post
 import com.shn.fh.posts.PostsFragment
 import com.shn.fh.spots.SpotsFragment
 import com.shn.fh.utils.Consts
@@ -42,17 +42,11 @@ class MainActivity : AppCompatActivity() {
 
     private var isLoading = false
     private var isLastPage = false
+    private  var lastPostId:String = ""
 
-    private val postsPerPage = 10
+    private val postsPerPage = 3
     private var currentPage = 1
-    private lateinit var selectedLocation:String
-
-
-
-
-
-
-
+    private lateinit var selectedLocation: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.addBtn.setOnClickListener {
 
-           // getPlacesList()
+            // getPlacesList()
 
             /* when (selectedTab) {
                  0 -> {
@@ -270,32 +264,63 @@ class MainActivity : AppCompatActivity() {
         postAdapter.clearPosts()
         currentPage = 1
         isLastPage = false
-        loadPosts()
+        isLoading = false
+        lastPostId=""
+        loadPostIDsOfLocation()
     }
 
-    private fun loadPosts() {
+    private fun loadPostIDsOfLocation() {
+        if (isLoading || isLastPage) {
+            return
+        }
+
         isLoading = true
         val databaseReference = firebaseReference.getLocationsRef().child(selectedLocation).child("posts")
-        val query = databaseReference.limitToFirst(postsPerPage * currentPage)
+        // Modify the query based on whether lastPostId is empty
+        val query = if (lastPostId.isNotEmpty()) {
+            databaseReference.orderByKey().startAt(lastPostId).limitToFirst(postsPerPage)
+        } else {
+            databaseReference.limitToFirst(postsPerPage)
+        }
 
         query.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val newPosts = mutableListOf<String>()
+                val newPosts = mutableListOf<Post>()
 
                 for (postSnapshot in dataSnapshot.children) {
                     val postId = postSnapshot.key.toString()
+                    lastPostId = postId // Update lastPostId for pagination
 
-                    val post = postId
-                    newPosts.add(post)
+                    // Load post content
+                    val postDatabaseReference = firebaseReference.getPostsRef().child(postId)
+                    postDatabaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            var post = Post()
+                            post.postId = postId
+                            post.comments = snapshot.child("comments").value.toString().toInt()
+                            post.likes = snapshot.child("likes").value.toString().toInt()
+                            post.description = snapshot.child("description").value.toString()
+
+                            newPosts.add(post)
+
+                            // Check if all posts have been processed
+                            if (newPosts.size == dataSnapshot.childrenCount.toInt()) {
+                                postAdapter.addPosts(newPosts)
+
+                                if (newPosts.size < postsPerPage) {
+                                    isLastPage = true
+                                }
+
+                                isLoading = false
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            // Handle cancellation
+                            isLoading = false
+                        }
+                    })
                 }
-
-                postAdapter.addPosts(newPosts)
-
-                if (newPosts.size < postsPerPage) {
-                    isLastPage = true
-                }
-
-                isLoading = false
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
@@ -305,47 +330,14 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+
     private fun loadMorePosts() {
+        // Increment currentPage after loading more posts
+        loadPostIDsOfLocation()
         currentPage++
-        loadPosts()
     }
 
 
-
-
-   /* private fun getPostIDsOfLocation(location: String) {
-        val databaseReference = firebaseReference.getLocationsRef()
-        val postIDsList = ArrayList<String>()
-
-        databaseReference.child(location).child("posts")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    for (post in snapshot.children) {
-                        postIDsList.add(post.key.toString())
-                    }
-
-                    //show in recyclerview
-                    val recyclerView: RecyclerView = findViewById(R.id.rv_posts)
-                    recyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
-                    recyclerView.adapter = PostAdapter(postIDsList)
-
-
-
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        getString(R.string.msg_something_wrong),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-
-            }
-
-            )
-
-    }*/
 
     class ViewPagerAdapter : FragmentPagerAdapter {
 

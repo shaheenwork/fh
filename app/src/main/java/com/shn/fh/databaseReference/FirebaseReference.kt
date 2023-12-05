@@ -17,5 +17,8 @@ class FirebaseReference {
     fun getLocationsRef(): DatabaseReference {
         return getRootReference().child("locations")
     }
+    fun getPostsRef(): DatabaseReference {
+        return getRootReference().child("posts")
+    }
 
 }
