@@ -1,0 +1,9 @@
+<!-- res/layout/item_photo.xml -->
+
+<ImageView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/imageView"
+    android:layout_width="80dp"
+    android:layout_height="80dp"
+    android:scaleType="centerCrop"
+    android:layout_marginEnd="8dp"/>

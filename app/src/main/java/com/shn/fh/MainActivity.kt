@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupPostsRecyclerView() {
         recyclerView = binding.rvPosts
-        postAdapter = PostAdapter()
+        postAdapter = PostAdapter(this)
 
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
@@ -295,13 +295,21 @@ class MainActivity : AppCompatActivity() {
                     val postDatabaseReference = firebaseReference.getPostsRef().child(postId)
                     postDatabaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
-                            var post = Post()
+                            val post = Post()
                             post.postId = postId
                             post.comments = snapshot.child("comments").value.toString().toInt()
                             post.likes = snapshot.child("likes").value.toString().toInt()
                             post.description = snapshot.child("description").value.toString()
+                            // Retrieve photo URLs as a list
+                            val photoUrlsList = mutableListOf<String>()
+                            for (photoSnapshot in snapshot.child("photoURLs").children) {
+                                val photoUrl = photoSnapshot.value.toString()
+                                photoUrlsList.add(photoUrl)
+                            }
+                            post.photoURLs = photoUrlsList
 
                             newPosts.add(post)
+
 
                             // Check if all posts have been processed
                             if (newPosts.size == dataSnapshot.childrenCount.toInt()) {
@@ -336,6 +344,26 @@ class MainActivity : AppCompatActivity() {
         loadPostIDsOfLocation()
         currentPage++
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

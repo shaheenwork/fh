@@ -1,4 +1,5 @@
-<!-- res/layout/item_post.xml -->
+<!-- res/layout/item_post_advanced.xml -->
+
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -6,16 +7,60 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Post Text -->
     <TextView
-        android:id="@+id/postIdTextView"
-        android:layout_width="wrap_content"
+        android:id="@+id/textPost"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:textStyle="bold"/>
+        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin suscipit justo ac massa vestibulum, sit amet venenatis nisi congue."
+        android:lineSpacingMultiplier="1.2"/>
 
+    <!-- Post Photos (Using a library like Glide or Picasso for image loading) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerPhotos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"/>
+
+    <!-- Likes and Comments Section -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:background="@color/white"
-        />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp">
+
+        <!-- Likes Icon -->
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_like"
+            android:tint="@color/colorPrimary"/>
+
+        <!-- Likes Count -->
+        <TextView
+            android:id="@+id/textLikes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100 Likes"
+            android:layout_marginStart="8dp"/>
+
+        <!-- Comments Icon -->
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_comment"
+            android:tint="@color/colorPrimary"
+            android:layout_marginStart="16dp"/>
+
+        <!-- Comments Count -->
+        <TextView
+            android:id="@+id/textComments"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50 Comments"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
 </LinearLayout>
