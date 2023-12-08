@@ -13,7 +13,20 @@
           "package_name": "com.shn.fh"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "330372890644-150tbh35nqduq6n6ejc2h2h0hp1i0c5s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shn.fh",
+            "certificate_hash": "76dd6f21fe668191467d039d22d7f5a501e8904b"
+          }
+        },
+        {
+          "client_id": "330372890644-28bv0eiftfnen57ggeb2m5dee5vi68q6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCF2C3W5P7ZCH74kwC2ysQlyO3XAcV8Y4Y"
@@ -21,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "330372890644-28bv0eiftfnen57ggeb2m5dee5vi68q6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
@@ -32,7 +50,12 @@
           "package_name": "my.insta.shn"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "330372890644-28bv0eiftfnen57ggeb2m5dee5vi68q6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCF2C3W5P7ZCH74kwC2ysQlyO3XAcV8Y4Y"
@@ -40,7 +63,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "330372890644-28bv0eiftfnen57ggeb2m5dee5vi68q6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

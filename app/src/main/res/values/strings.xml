@@ -2,4 +2,6 @@
     <string name="app_name">FH</string>
     <string name="msg_location_permission_required">permission required</string>
     <string name="msg_something_wrong">Something went wrong</string>
+    <string name="web_client_id">330372890644-28bv0eiftfnen57ggeb2m5dee5vi68q6.apps.googleusercontent.com</string>
+    <string name="msg_no_internet">Please check your internet connection and try again</string>
 </resources>

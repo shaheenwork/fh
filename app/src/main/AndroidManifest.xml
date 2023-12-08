@@ -18,13 +18,14 @@
             android:name=".CommentsActivity"
             android:exported="false" />
         <activity
-            android:name=".AddNewSpotsActivity"
-            android:exported="false" />
-        <activity
             android:name=".posts.AddNewPostActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
+            android:exported="true">
+
+        </activity>
+        <activity android:name="com.shn.fh.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

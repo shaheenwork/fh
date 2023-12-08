@@ -23,5 +23,8 @@ class FirebaseReference {
     fun getCommentsRef(postID:String): DatabaseReference {
         return getRootReference().child("comments").child(postID)
     }
+    fun getUsersRef(): DatabaseReference {
+        return getRootReference().child("users")
+    }
 
 }
