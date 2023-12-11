@@ -2,8 +2,6 @@ package com.shn.fh
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.content.SharedPreferences.Editor
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
@@ -30,8 +28,8 @@ import com.shn.fh.utils.PrefManager
 
 class LoginActivity : AppCompatActivity() {
     lateinit var mGoogleSignInClient: GoogleSignInClient
-    val Req_Code: Int = 123
-    private val TAG = "LoginActivityTag"
+    private val reqCode: Int = 123
+    private val tag = "LoginActivityTag"
 
     private lateinit var firebaseAuth: FirebaseAuth
 
@@ -53,13 +51,6 @@ class LoginActivity : AppCompatActivity() {
 
         val signInButton: SignInButton = findViewById(R.id.bt_sign_in);
 
-        if (PrefManager.getIsLogin()) {
-            signInButton.visibility = View.GONE
-            proceedToMainActivity()
-        } else {
-            signInButton.visibility = View.VISIBLE
-
-        }
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.web_client_id))
@@ -111,13 +102,13 @@ class LoginActivity : AppCompatActivity() {
 
     private fun signInGoogle() {
         val signInIntent: Intent = mGoogleSignInClient.signInIntent
-        startActivityForResult(signInIntent, Req_Code)
+        startActivityForResult(signInIntent, reqCode)
     }
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == Req_Code) {
+        if (requestCode == reqCode) {
             val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
             handleResult(task)
         }
@@ -141,7 +132,7 @@ class LoginActivity : AppCompatActivity() {
         } catch (e: ApiException) {
             // Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
             if (Consts.DEBUGGABLE)
-                Log.e(TAG, e.message.toString())
+                Log.e(tag, e.message.toString())
         }
     }
 
@@ -154,7 +145,9 @@ class LoginActivity : AppCompatActivity() {
                 // Check if the user is already signed up
                 if (user != null) {
                     if (Consts.DEBUGGABLE)
-                        Log.d(TAG, "userID= " + user.uid)
+                        Log.d(tag, "userID= " + user.uid)
+
+                    PrefManager.setUserId(user.uid)
                     checkIfUserExists(user.uid, account)
                 }
             }
@@ -167,13 +160,13 @@ class LoginActivity : AppCompatActivity() {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     if (dataSnapshot.exists()) {
                         if (Consts.DEBUGGABLE)
-                            Log.d(TAG, "already exist")
+                            Log.d(tag, "already exist")
                         PrefManager.setIsLogin(true)
                         proceedToMainActivity()
                     } else {
                         // User doesn't exist, proceed with the sign-up process
                         if (Consts.DEBUGGABLE)
-                            Log.d(TAG, "not exist")
+                            Log.d(tag, "not exist")
                         signUpUser(userId, account)
                     }
                 }

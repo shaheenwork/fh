@@ -2,6 +2,7 @@ package com.shn.fh.databaseReference
 
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.shn.fh.utils.Consts
 
 class FirebaseReference {
 
@@ -15,16 +16,16 @@ class FirebaseReference {
     }
 
     fun getLocationsRef(): DatabaseReference {
-        return getRootReference().child("locations")
+        return getRootReference().child(Consts.KEY_LOCATIONS)
     }
     fun getPostsRef(): DatabaseReference {
-        return getRootReference().child("posts")
+        return getRootReference().child(Consts.KEY_POSTS)
     }
     fun getCommentsRef(postID:String): DatabaseReference {
-        return getRootReference().child("comments").child(postID)
+        return getRootReference().child(Consts.KEY_COMMENTS).child(postID)
     }
     fun getUsersRef(): DatabaseReference {
-        return getRootReference().child("users")
+        return getRootReference().child(Consts.KEY_USERS)
     }
 
 }

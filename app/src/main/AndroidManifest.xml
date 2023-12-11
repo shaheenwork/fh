@@ -27,6 +27,9 @@
         </activity>
         <activity android:name="com.shn.fh.LoginActivity"
             android:exported="true">
+        </activity>
+        <activity android:name="com.shn.fh.SplashScreenActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

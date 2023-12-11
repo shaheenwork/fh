@@ -3,17 +3,51 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_margin="020dp"
+    android:layout_margin="030dp"
     android:layout_height="match_parent"
     tools:context=".posts.AddNewPostActivity">
 
+
     <EditText
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/ET_post"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:autofillHints="hghfgh" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:inputType="textPersonName"
+        android:text="Name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+    <LinearLayout
+        android:layout_marginTop="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/ET_post"
+        android:weightSum="2"
+        android:orientation="horizontal">
+    <Button
+        android:id="@+id/BTN_photo1"
+        android:layout_width="0dp"
+        android:layout_marginEnd="15dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="Photo 1"
+        />
+        <Button
+            android:id="@+id/BTN_photo2"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Photo 2"
+            />
+    </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/BTN_addPost"
+        android:text="Add post"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

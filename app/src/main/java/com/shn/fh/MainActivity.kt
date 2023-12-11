@@ -1,5 +1,6 @@
 package com.shn.fh
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
@@ -20,6 +21,7 @@ import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
 import com.shn.fh.models.Location
 import com.shn.fh.models.Post
+import com.shn.fh.posts.AddNewPostActivity
 import com.shn.fh.posts.PostsFragment
 import com.shn.fh.spots.SpotsFragment
 import com.shn.fh.utils.Consts
@@ -56,7 +58,16 @@ class MainActivity : AppCompatActivity() {
 
         binding.addBtn.setOnClickListener {
 
-            // getPlacesList()
+            val intent = Intent(this, AddNewPostActivity::class.java)
+            intent.putExtra(Consts.KEY_LOCATION,selectedLocation)
+            startActivity(intent)
+            overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)
+
+
+
+
+
+
 
             /* when (selectedTab) {
                  0 -> {
@@ -275,7 +286,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         isLoading = true
-        val databaseReference = firebaseReference.getLocationsRef().child(selectedLocation).child("posts")
+        val databaseReference = firebaseReference.getLocationsRef().child(selectedLocation).child(Consts.KEY_POSTS)
         // Modify the query based on whether lastPostId is empty
         val query = if (lastPostId.isNotEmpty()) {
             databaseReference.orderByKey().startAt(lastPostId).limitToFirst(postsPerPage)
@@ -297,12 +308,12 @@ class MainActivity : AppCompatActivity() {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             val post = Post()
                             post.postId = postId
-                            post.comments = snapshot.child("comments").value.toString().toInt()
-                            post.likes = snapshot.child("likes").value.toString().toInt()
-                            post.description = snapshot.child("description").value.toString()
+                            post.comments = snapshot.child(Consts.KEY_COMMENTS).value.toString().toInt()
+                            post.likes = snapshot.child(Consts.KEY_LIKES).value.toString().toInt()
+                            post.description = snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
                             // Retrieve photo URLs as a list
                             val photoUrlsList = mutableListOf<String>()
-                            for (photoSnapshot in snapshot.child("photoURLs").children) {
+                            for (photoSnapshot in snapshot.child(Consts.KEY_PHOTO_URLS).children) {
                                 val photoUrl = photoSnapshot.value.toString()
                                 photoUrlsList.add(photoUrl)
                             }
