@@ -9,15 +9,20 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.shn.fh.FileUtil
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityAddNewPostBinding
 import com.shn.fh.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
+import id.zelory.compressor.Compressor
+import kotlinx.coroutines.launch
+import java.io.File
 
 class AddNewPostActivity : AppCompatActivity() {
     private lateinit var binding:ActivityAddNewPostBinding
@@ -25,6 +30,7 @@ class AddNewPostActivity : AppCompatActivity() {
     private lateinit var postsdatabaseReference: DatabaseReference
     private lateinit var locationdatabaseReference: DatabaseReference
     private lateinit var selectedLocation:String
+    private lateinit var actualImage:File
 
 
 
@@ -39,6 +45,7 @@ class AddNewPostActivity : AppCompatActivity() {
             if (result != null) {
                 // getting URI of selected Image
                  imageUri= result.data?.data
+                actualImage = FileUtil.from(this, result.data?.data)
 
 
                 binding.image1.visibility=View.VISIBLE
@@ -53,30 +60,35 @@ class AddNewPostActivity : AppCompatActivity() {
     private fun uploadPhoto(imageUri: Uri?, post: Post) {
         // extract the file name with extension
         val sd = getFileName()
-
-        // Upload Task with upload to directory 'file'
-        // and name of the file remains same
-        val uploadTask = storageRef!!.child("$sd").putFile(imageUri!!)
-
-        // On success, download the file URL and display it
-        uploadTask.addOnSuccessListener {
+        lifecycleScope.launch {
+            val compressedImageFile = Compressor.compress(this@AddNewPostActivity,  actualImage)
 
 
-            (storageRef!!.child(sd!!).downloadUrl
-                .addOnSuccessListener { uri -> //   Toast.makeText(Inchat.this,uri.toString(),Toast.LENGTH_LONG).show();
-                    post.photoURLs= arrayOf(uri.toString()).toList()
-                    addPost(post)
-                }.addOnFailureListener { // Handle any errors
-                    // hideProgressDialog()
-                    Toast.makeText(
-                        applicationContext,
-                        "Something went wrong",
-                        Toast.LENGTH_LONG
-                    ).show()
-                })
-        }.addOnFailureListener {
-            Log.e("Firebase", "Image Upload fail")
+            // Upload Task with upload to directory 'file'
+            // and name of the file remains same
+            val uploadTask = storageRef!!.child("$sd").putFile(Uri.fromFile(compressedImageFile))
+
+            // On success, download the file URL and display it
+            uploadTask.addOnSuccessListener {
+
+
+                (storageRef!!.child(sd!!).downloadUrl
+                    .addOnSuccessListener { uri -> //   Toast.makeText(Inchat.this,uri.toString(),Toast.LENGTH_LONG).show();
+                        post.photoURLs= arrayOf(uri.toString()).toList()
+                        addPost(post)
+                    }.addOnFailureListener { // Handle any errors
+                        // hideProgressDialog()
+                        Toast.makeText(
+                            applicationContext,
+                            "Something went wrong",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    })
+            }.addOnFailureListener {
+                Log.e("Firebase", "Image Upload fail")
+            }
         }
+
     }
 
     private fun getFileName(): String? {
