@@ -4,10 +4,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -16,7 +18,6 @@ import com.shn.fh.databinding.ActivityAddNewPostBinding
 import com.shn.fh.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
-import java.util.*
 
 class AddNewPostActivity : AppCompatActivity() {
     private lateinit var binding:ActivityAddNewPostBinding
@@ -30,43 +31,53 @@ class AddNewPostActivity : AppCompatActivity() {
 
     //photo
     private var storageRef: StorageReference? = null
+    var imageUri: Uri? = null
     private var imagePickerActivityResult: ActivityResultLauncher<Intent> =
     // lambda expression to receive a result back, here we
         // receive single item(photo) on selection
         registerForActivityResult( ActivityResultContracts.StartActivityForResult()) { result ->
             if (result != null) {
                 // getting URI of selected Image
-                val imageUri: Uri? = result.data?.data
-
-                // val fileName = imageUri?.pathSegments?.last()
-
-                // extract the file name with extension
-                val sd = getFileName()
-
-                // Upload Task with upload to directory 'file'
-                // and name of the file remains same
-                val uploadTask = storageRef!!.child("$sd").putFile(imageUri!!)
-
-                // On success, download the file URL and display it
-                uploadTask.addOnSuccessListener {
+                 imageUri= result.data?.data
 
 
-                    (storageRef!!.child(sd!!).downloadUrl
-                        .addOnSuccessListener { uri -> //   Toast.makeText(Inchat.this,uri.toString(),Toast.LENGTH_LONG).show();
-                            postsdatabaseReference.child("ss").setValue(uri.toString())
-                        }.addOnFailureListener { // Handle any errors
-                            // hideProgressDialog()
-                            Toast.makeText(
-                                applicationContext,
-                                "Something went wrong",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        })
-                }.addOnFailureListener {
-                    Log.e("Firebase", "Image Upload fail")
-                }
+                binding.image1.visibility=View.VISIBLE
+                binding.BTNPhoto1.visibility=View.GONE
+
+                Glide.with(this@AddNewPostActivity)
+                    .load(imageUri)
+                    .into(binding.image1)
             }
         }
+
+    private fun uploadPhoto(imageUri: Uri?, post: Post) {
+        // extract the file name with extension
+        val sd = getFileName()
+
+        // Upload Task with upload to directory 'file'
+        // and name of the file remains same
+        val uploadTask = storageRef!!.child("$sd").putFile(imageUri!!)
+
+        // On success, download the file URL and display it
+        uploadTask.addOnSuccessListener {
+
+
+            (storageRef!!.child(sd!!).downloadUrl
+                .addOnSuccessListener { uri -> //   Toast.makeText(Inchat.this,uri.toString(),Toast.LENGTH_LONG).show();
+                    post.photoURLs= arrayOf(uri.toString()).toList()
+                    addPost(post)
+                }.addOnFailureListener { // Handle any errors
+                    // hideProgressDialog()
+                    Toast.makeText(
+                        applicationContext,
+                        "Something went wrong",
+                        Toast.LENGTH_LONG
+                    ).show()
+                })
+        }.addOnFailureListener {
+            Log.e("Firebase", "Image Upload fail")
+        }
+    }
 
     private fun getFileName(): String? {
 
@@ -93,6 +104,7 @@ class AddNewPostActivity : AppCompatActivity() {
         storageRef = FirebaseStorage.getInstance().reference.child("post_photos")
 
 
+        val galleryIntent = Intent(Intent.ACTION_PICK)
         binding.BTNAddPost.setOnClickListener {
 
             val post = Post()
@@ -101,8 +113,7 @@ class AddNewPostActivity : AppCompatActivity() {
             post.timestamp = System.currentTimeMillis()
             post.userId = PrefManager.getUserId()
 
-
-            addPost(post)
+            uploadPhoto(imageUri,post)
         }
 
 
@@ -111,7 +122,7 @@ class AddNewPostActivity : AppCompatActivity() {
 
             // PICK INTENT picks item from data
             // and returned selected item
-            val galleryIntent = Intent(Intent.ACTION_PICK)
+
             // here item is type of image
             galleryIntent.type = "image/*"
             // ActivityResultLauncher callback
