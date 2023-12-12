@@ -289,7 +289,7 @@ class MainActivity : AppCompatActivity() {
         val databaseReference = firebaseReference.getLocationsRef().child(selectedLocation).child(Consts.KEY_POSTS)
         // Modify the query based on whether lastPostId is empty
         val query = if (lastPostId.isNotEmpty()) {
-            databaseReference.orderByKey().startAt(lastPostId).limitToFirst(postsPerPage)
+            databaseReference.orderByKey().startAfter(lastPostId).limitToFirst(postsPerPage)
         } else {
             databaseReference.limitToFirst(postsPerPage)
         }
@@ -300,7 +300,6 @@ class MainActivity : AppCompatActivity() {
 
                 for (postSnapshot in dataSnapshot.children) {
                     val postId = postSnapshot.key.toString()
-                    lastPostId = postId // Update lastPostId for pagination
 
                     // Load post content
                     val postDatabaseReference = firebaseReference.getPostsRef().child(postId)
@@ -321,7 +320,6 @@ class MainActivity : AppCompatActivity() {
 
                             newPosts.add(post)
 
-
                             // Check if all posts have been processed
                             if (newPosts.size == dataSnapshot.childrenCount.toInt()) {
                                 postAdapter.addPosts(newPosts)
@@ -329,6 +327,9 @@ class MainActivity : AppCompatActivity() {
                                 if (newPosts.size < postsPerPage) {
                                     isLastPage = true
                                 }
+
+                                // Update lastPostId only after processing all posts
+                                lastPostId = newPosts[newPosts.size - 1].postId
 
                                 isLoading = false
                             }
@@ -347,6 +348,7 @@ class MainActivity : AppCompatActivity() {
                 // Handle error
             }
         })
+
     }
 
 
