@@ -25,14 +25,12 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class AddNewPostActivity : AppCompatActivity() {
-    private lateinit var binding:ActivityAddNewPostBinding
+    private lateinit var binding: ActivityAddNewPostBinding
     private lateinit var firebaseReference: FirebaseReference
     private lateinit var postsdatabaseReference: DatabaseReference
     private lateinit var locationdatabaseReference: DatabaseReference
-    private lateinit var selectedLocation:String
-    private lateinit var actualImage:File
-
-
+    private lateinit var selectedLocation: String
+    private lateinit var actualImage: File
 
 
     //photo
@@ -41,15 +39,15 @@ class AddNewPostActivity : AppCompatActivity() {
     private var imagePickerActivityResult: ActivityResultLauncher<Intent> =
     // lambda expression to receive a result back, here we
         // receive single item(photo) on selection
-        registerForActivityResult( ActivityResultContracts.StartActivityForResult()) { result ->
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result != null) {
                 // getting URI of selected Image
-                 imageUri= result.data?.data
+                imageUri = result.data?.data
                 actualImage = FileUtil.from(this, result.data?.data)
 
 
-                binding.image1.visibility=View.VISIBLE
-                binding.BTNPhoto1.visibility=View.GONE
+                binding.image1.visibility = View.VISIBLE
+                binding.BTNPhoto1.visibility = View.GONE
 
                 Glide.with(this@AddNewPostActivity)
                     .load(imageUri)
@@ -61,7 +59,7 @@ class AddNewPostActivity : AppCompatActivity() {
         // extract the file name with extension
         val sd = getFileName()
         lifecycleScope.launch {
-            val compressedImageFile = Compressor.compress(this@AddNewPostActivity,  actualImage)
+            val compressedImageFile = Compressor.compress(this@AddNewPostActivity, actualImage)
 
 
             // Upload Task with upload to directory 'file'
@@ -71,10 +69,9 @@ class AddNewPostActivity : AppCompatActivity() {
             // On success, download the file URL and display it
             uploadTask.addOnSuccessListener {
 
-
                 (storageRef!!.child(sd!!).downloadUrl
                     .addOnSuccessListener { uri -> //   Toast.makeText(Inchat.this,uri.toString(),Toast.LENGTH_LONG).show();
-                        post.photoURLs= arrayOf(uri.toString()).toList()
+                        post.photoURLs = arrayOf(uri.toString()).toList()
                         addPost(post)
                     }.addOnFailureListener { // Handle any errors
                         // hideProgressDialog()
@@ -93,16 +90,14 @@ class AddNewPostActivity : AppCompatActivity() {
 
     private fun getFileName(): String? {
 
-        return PrefManager.getUserId() +"_"+ System.currentTimeMillis()
+        return PrefManager.getUserId() + "_" + System.currentTimeMillis()
 
     }
 
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding=ActivityAddNewPostBinding.inflate(layoutInflater)
+        binding = ActivityAddNewPostBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         selectedLocation = intent.getStringExtra(Consts.KEY_LOCATION)!!
@@ -125,7 +120,7 @@ class AddNewPostActivity : AppCompatActivity() {
             post.timestamp = System.currentTimeMillis()
             post.userId = PrefManager.getUserId()
 
-            uploadPhoto(imageUri,post)
+            uploadPhoto(imageUri, post)
         }
 
 
@@ -148,8 +143,9 @@ class AddNewPostActivity : AppCompatActivity() {
     private fun addPost(post: Post) {
 
         postsdatabaseReference.child(post.postId).setValue(post)
-        locationdatabaseReference.child(selectedLocation).child(Consts.KEY_POSTS).child(post.postId).setValue(true)
-        Toast.makeText(this,"post added",Toast.LENGTH_LONG).show()
+        locationdatabaseReference.child(selectedLocation).child(Consts.KEY_POSTS).child(post.postId)
+            .setValue(true)
+        Toast.makeText(this, "post added", Toast.LENGTH_LONG).show()
 
     }
 }

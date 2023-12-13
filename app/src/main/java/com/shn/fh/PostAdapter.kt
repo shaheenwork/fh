@@ -14,10 +14,11 @@ import com.shn.fh.utils.Consts
 
 
 // PostAdapter.kt
-class PostAdapter(context: android.content.Context) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+class PostAdapter(context: android.content.Context, userId:String) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     private val posts: MutableList<Post> = mutableListOf()
     private val context=context
+    private val userId = userId
 
 
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -60,7 +61,11 @@ class PostAdapter(context: android.content.Context) : RecyclerView.Adapter<PostA
     }
 
     fun addPosts(newPosts: List<Post>) {
-        posts.addAll(newPosts)
+        // filter out user's own posts
+        val filteredPosts = newPosts.filter { post ->
+            post.userId!=userId
+        }
+        posts.addAll(filteredPosts)
         notifyDataSetChanged()
     }
 }

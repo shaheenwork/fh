@@ -25,6 +25,7 @@ import com.shn.fh.posts.AddNewPostActivity
 import com.shn.fh.posts.PostsFragment
 import com.shn.fh.spots.SpotsFragment
 import com.shn.fh.utils.Consts
+import com.shn.fh.utils.PrefManager
 import com.shn.fh.utils.Utils
 
 
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var firebaseReference: FirebaseReference
 
+    private lateinit var userId:String
 
     private lateinit var locationsList: ArrayList<Location>
     private var selectedTab: Int = Consts.TAB_POSTS
@@ -55,6 +57,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        userId = PrefManager.getUserId()
 
         binding.addBtn.setOnClickListener {
 
@@ -112,7 +116,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupPostsRecyclerView() {
         recyclerView = binding.rvPosts
-        postAdapter = PostAdapter(this)
+        postAdapter = PostAdapter(this,userId)
 
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
@@ -310,6 +314,8 @@ class MainActivity : AppCompatActivity() {
                             post.comments = snapshot.child(Consts.KEY_COMMENTS).value.toString().toInt()
                             post.likes = snapshot.child(Consts.KEY_LIKES).value.toString().toInt()
                             post.description = snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
+                            post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
+
                             // Retrieve photo URLs as a list
                             val photoUrlsList = mutableListOf<String>()
                             for (photoSnapshot in snapshot.child(Consts.KEY_PHOTO_URLS).children) {
