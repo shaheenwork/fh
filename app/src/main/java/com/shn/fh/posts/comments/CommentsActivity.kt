@@ -5,10 +5,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityCommentsBinding
 import com.shn.fh.posts.models.Comment
@@ -73,8 +70,47 @@ class CommentsActivity : AppCompatActivity() {
         isLastPage = false
         isLoading = false
         lastCommentId=""
+        incrementCommentsCount(postID)
         getComments()
 
+    }
+
+    fun incrementCommentsCount(postId: String) {
+
+        firebaseReference.getPostsRef().child(postId).runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val post = currentData.getValue(Post::class.java)
+
+                // Check if the post exists
+                if (post == null) {
+                    // Handle error or return Transaction.success(currentData) if you don't want to create the post
+                    return Transaction.success(currentData)
+                }
+
+                // Increment the likes count
+                post.comments = post.comments + 1
+
+                // Set the updated value
+                currentData.value = post
+
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(
+                databaseError: DatabaseError?,
+                committed: Boolean,
+                currentData: DataSnapshot?
+            ) {
+                if (committed) {
+                    // Like count updated successfully
+                } else {
+                    // Transaction failed, handle error
+                    if (databaseError != null) {
+                        // Handle the error, you might want to retry or inform the user
+                    }
+                }
+            }
+        })
     }
 
 

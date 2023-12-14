@@ -31,6 +31,7 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val postIdTextView: TextView = itemView.findViewById(R.id.textPost)
         val likeCountTextView: TextView = itemView.findViewById(R.id.textLikes)
+        val commentCountTextView: TextView = itemView.findViewById(R.id.textComments)
         val photoRecyclerView: RecyclerView = itemView.findViewById(R.id.recyclerPhotos)
         val BTN_Like: ImageView = itemView.findViewById(R.id.btn_like)
 
@@ -49,6 +50,7 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         val post = posts[position]
         holder.postIdTextView.text = post.description
         holder.likeCountTextView.text = (post.liked_users.size).toString() + " likes"
+        holder.commentCountTextView.text = (post.comments).toString() + " comments"
         if (post.liked_users.isNotEmpty() && post.liked_users.contains(userId)){
             holder.BTN_Like.setColorFilter(ContextCompat.getColor(context, R.color.red));
         }
