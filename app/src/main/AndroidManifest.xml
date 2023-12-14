@@ -15,20 +15,20 @@
         android:theme="@style/Theme.FH"
         tools:targetApi="31">
         <activity
-            android:name=".CommentsActivity"
+            android:name=".posts.comments.CommentsActivity"
             android:exported="false" />
         <activity
             android:name=".posts.AddNewPostActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".posts.PostsActivity"
             android:exported="true">
 
         </activity>
-        <activity android:name="com.shn.fh.LoginActivity"
+        <activity android:name="com.shn.fh.main.LoginActivity"
             android:exported="true">
         </activity>
-        <activity android:name="com.shn.fh.SplashScreenActivity"
+        <activity android:name="com.shn.fh.main.SplashScreenActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,4 +1,4 @@
-package com.shn.fh
+package com.shn.fh.posts
 
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,23 +13,21 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager.widget.ViewPager
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.shn.fh.R
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
-import com.shn.fh.models.Location
-import com.shn.fh.models.Post
-import com.shn.fh.posts.AddNewPostActivity
-import com.shn.fh.posts.PostsFragment
-import com.shn.fh.spots.SpotsFragment
+import com.shn.fh.posts.models.Location
+import com.shn.fh.posts.models.Post
+import com.shn.fh.posts.adapter.PostAdapter
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
 import com.shn.fh.utils.Utils
 
 
-class MainActivity : AppCompatActivity() {
+class PostsActivity : AppCompatActivity() {
 
     private val locationReqId: Int = 1
     private lateinit var binding: ActivityMainBinding
@@ -66,9 +64,6 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra(Consts.KEY_LOCATION,selectedLocation)
             startActivity(intent)
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)
-
-
-
 
 
 
@@ -111,6 +106,10 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
+        /*10 mf
+        * 20c
+        * 5fs
+        * 20chlv*/
 
     }
 
@@ -151,6 +150,7 @@ class MainActivity : AppCompatActivity() {
 
     // This function is used to add items in arraylist and assign
     // the adapter to view pager
+/*
     private fun setupViewPager(viewpager: ViewPager) {
         var adapter = ViewPagerAdapter(supportFragmentManager)
 
@@ -185,6 +185,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+*/
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
@@ -194,14 +195,14 @@ class MainActivity : AppCompatActivity() {
             locationReqId -> {
                 if (grantResults.isNotEmpty() && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
 
-                    Utils.getLatLong(this@MainActivity) { latitude, longitude ->
+                    Utils.getLatLong(this@PostsActivity) { latitude, longitude ->
                         Toast.makeText(
-                            this@MainActivity, "loc: $latitude:: $longitude", Toast.LENGTH_LONG
+                            this@PostsActivity, "loc: $latitude:: $longitude", Toast.LENGTH_LONG
                         ).show()
 
                         Toast.makeText(
-                            this@MainActivity,
-                            Utils.getCityName(latitude, longitude, this@MainActivity),
+                            this@PostsActivity,
+                            Utils.getCityName(latitude, longitude, this@PostsActivity),
                             Toast.LENGTH_LONG
                         ).show()
 
@@ -260,7 +261,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(
-                    this@MainActivity,
+                    this@PostsActivity,
                     getString(R.string.msg_something_wrong),
                     Toast.LENGTH_LONG
                 ).show()

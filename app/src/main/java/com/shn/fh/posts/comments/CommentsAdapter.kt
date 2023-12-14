@@ -1,4 +1,4 @@
-package com.shn.fh
+package com.shn.fh.posts.comments
 
 // PostAdapter.kt
 import android.view.LayoutInflater
@@ -6,7 +6,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.widget.TextView
-import com.shn.fh.models.Comment
+import com.shn.fh.R
+import com.shn.fh.posts.models.Comment
 
 
 // PostAdapter.kt

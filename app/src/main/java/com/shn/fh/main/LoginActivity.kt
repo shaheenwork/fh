@@ -1,4 +1,4 @@
-package com.shn.fh
+package com.shn.fh.main
 
 import android.content.Context
 import android.content.Intent
@@ -21,7 +21,9 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
+import com.shn.fh.R
 import com.shn.fh.databaseReference.FirebaseReference
+import com.shn.fh.posts.PostsActivity
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
 
@@ -79,7 +81,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun proceedToMainActivity() {
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, PostsActivity::class.java)
         startActivity(intent)
         finish()
     }

@@ -1,4 +1,4 @@
-package com.shn.fh.models
+package com.shn.fh.posts.models
 
 data class Post(
     var postId: String = "",

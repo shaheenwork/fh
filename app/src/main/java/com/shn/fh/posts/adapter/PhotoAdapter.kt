@@ -1,4 +1,4 @@
-package com.shn.fh
+package com.shn.fh.posts.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.shn.fh.R
 
 class PhotoAdapter(private val photos: List<String>,context: Context) : RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
     val context= context

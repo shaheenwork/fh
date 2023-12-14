@@ -4,12 +4,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CommentsActivity">
+    tools:context=".posts.comments.CommentsActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_comments"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/postCommentLyt"
+        android:weightSum="2"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="horizontal">
+
+    <EditText
+        android:layout_width="0dp"
+        android:layout_weight="1.5"
+        android:layout_height="wrap_content"
+        android:id="@+id/ET_comment"
+        />
+        <Button
+            android:id="@+id/BTN_postComment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Post"
+            android:layout_weight=".5"
+            />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

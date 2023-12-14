@@ -14,10 +14,10 @@ import com.bumptech.glide.Glide
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.shn.fh.FileUtil
+import com.shn.fh.utils.FileUtil
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityAddNewPostBinding
-import com.shn.fh.models.Post
+import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
 import id.zelory.compressor.Compressor

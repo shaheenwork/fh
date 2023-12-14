@@ -1,13 +1,13 @@
-package com.shn.fh
+package com.shn.fh.main
 
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.shn.fh.databinding.ActivitySplashBinding
+import com.shn.fh.posts.PostsActivity
 import com.shn.fh.utils.PrefManager
 
 
@@ -44,7 +44,7 @@ class SplashScreenActivity : AppCompatActivity() {
     }
 
     private fun proceedToMainActivity() {
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, PostsActivity::class.java)
         startActivity(intent)
         finish()
     }

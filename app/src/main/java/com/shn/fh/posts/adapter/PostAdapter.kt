@@ -1,4 +1,4 @@
-package com.shn.fh
+package com.shn.fh.posts.adapter
 
 // PostAdapter.kt
 import android.app.Activity
@@ -9,7 +9,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.shn.fh.models.Post
+import com.shn.fh.posts.comments.CommentsActivity
+import com.shn.fh.R
+import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
 
 
@@ -46,7 +48,7 @@ class PostAdapter(context: android.content.Context, userId:String) : RecyclerVie
         holder.photoRecyclerView.adapter = photoAdapter
 
         holder.postIdTextView.setOnClickListener{
-            val intent = Intent(context,CommentsActivity::class.java)
+            val intent = Intent(context, CommentsActivity::class.java)
             intent.putExtra(Consts.KEY_POST_ID,post.postId)
 
             (context as Activity).startActivity(intent)

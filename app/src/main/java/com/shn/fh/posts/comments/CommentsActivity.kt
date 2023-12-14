@@ -1,16 +1,20 @@
-package com.shn.fh
+package com.shn.fh.posts.comments
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityCommentsBinding
-import com.shn.fh.models.Comment
+import com.shn.fh.posts.models.Comment
+import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
+import com.shn.fh.utils.PrefManager
 
 class CommentsActivity : AppCompatActivity() {
     lateinit var postID: String
@@ -23,6 +27,7 @@ class CommentsActivity : AppCompatActivity() {
     private val commentsPerPage = 3
     private var currentPage = 1
     private lateinit var firebaseReference: FirebaseReference
+    private lateinit var commentsDatabaseReference : DatabaseReference
     private lateinit var binding:ActivityCommentsBinding
     private lateinit var comments:ArrayList<Comment>
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,60 +36,91 @@ class CommentsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         firebaseReference = FirebaseReference()
+        PrefManager.getInstance(this)
 
         postID = intent.getStringExtra(Consts.KEY_POST_ID)!!
+        commentsDatabaseReference = firebaseReference.getCommentsRef(postID)
 
         setupPostsRecyclerView()
-        getComments(postID)
+        getComments()
+
+        binding.BTNPostComment.setOnClickListener {
+            val comment = binding.ETComment.text.toString()
+            if (comment.isNotEmpty()){
+                addComment(comment)
+            }
+
+        }
 
 
 
 
     }
 
-    private fun getComments(postID: String) {
+    private fun addComment(comment: String) {
+        val key = commentsDatabaseReference.push().key
+        commentsDatabaseReference.child(key!!).child(Consts.KEY_COMMENT_ID).setValue(key)
+        commentsDatabaseReference.child(key).child(Consts.KEY_TEXT).setValue(comment)
+        commentsDatabaseReference.child(key).child(Consts.KEY_TIMESTAMP).setValue(System.currentTimeMillis())
+        commentsDatabaseReference.child(key).child(Consts.KEY_USER_ID).setValue(PrefManager.getUserId())
 
-        comments = ArrayList()
+        Toast.makeText(this, "comment added", Toast.LENGTH_LONG).show()
+
+
+        //load comments
+        adapter.clearComments()
+        currentPage = 1
+        isLastPage = false
+        isLoading = false
+        lastCommentId=""
+        getComments()
+
+    }
+
+
+    private fun getComments() {
 
         if (isLoading || isLastPage) {
             return
         }
 
         isLoading = true
-        val databaseReference = firebaseReference.getCommentsRef(postID)
+        // Modify the query based on whether lastPostId is empty
         val query = if (lastCommentId.isNotEmpty()) {
-            databaseReference.orderByKey().startAt(lastCommentId).limitToFirst(commentsPerPage)
+            commentsDatabaseReference.orderByKey().startAfter(lastCommentId).limitToFirst(commentsPerPage)
         } else {
-            databaseReference.limitToFirst(commentsPerPage)
+            commentsDatabaseReference.limitToFirst(commentsPerPage)
         }
 
         query.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val newComments = mutableListOf<Comment>()
+                val neComments = mutableListOf<Comment>()
 
-                for (snapshot in dataSnapshot.children) {
-                    val commentID = snapshot.key.toString()
-                    lastCommentId = commentID // Update lastPostId for pagination
+                for (commentsSnapshot in dataSnapshot.children) {
 
                     val comment = Comment()
-                    comment.commentId = commentID
-                    comment.userId = snapshot.child("userId").value.toString()
-                    comment.text = snapshot.child("text").value.toString()
-                    comment.timestamp = snapshot.child("timestamp").value.toString().toLong()
+                    comment.commentId = commentsSnapshot.child(Consts.KEY_COMMENT_ID).value.toString()
+                    comment.userId = commentsSnapshot.child(Consts.KEY_USER_ID).value.toString()
+                    comment.text = commentsSnapshot.child(Consts.KEY_TEXT).value.toString()
+                    comment.timestamp = commentsSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
 
-                    newComments.add(comment)
+                    neComments.add(comment)
 
-                }
-                if (newComments.size == dataSnapshot.childrenCount.toInt()) {
-                    adapter.addComments(newComments)
+                    // Check if all posts have been processed
+                    if (neComments.size == dataSnapshot.childrenCount.toInt()) {
+                        adapter.addComments(neComments)
 
-                    if (newComments.size < commentsPerPage) {
-                        isLastPage = true
+                        if (neComments.size < commentsPerPage) {
+                            isLastPage = true
+                        }
+
+                        // Update lastPostId only after processing all posts
+                        lastCommentId = neComments[neComments.size - 1].commentId
+
+                        isLoading = false
                     }
 
-                    isLoading = false
                 }
-
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
@@ -93,10 +129,13 @@ class CommentsActivity : AppCompatActivity() {
             }
         })
 
+
+
+
     }
-    private fun loadMorePosts() {
+    private fun loadMoreComments() {
         // Increment currentPage after loading more posts
-        getComments(postID)
+        getComments()
         currentPage++
     }
 
@@ -121,7 +160,7 @@ class CommentsActivity : AppCompatActivity() {
                         && firstVisibleItem >= 0
                         && totalItemCount >= commentsPerPage
                     ) {
-                        loadMorePosts()
+                        loadMoreComments()
                     }
                 }
             }
