@@ -33,6 +33,7 @@
 
         <!-- Likes Icon -->
         <ImageView
+            android:id="@+id/btn_like"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_like"

@@ -13,9 +13,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.shn.fh.R
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
@@ -27,7 +25,7 @@ import com.shn.fh.utils.PrefManager
 import com.shn.fh.utils.Utils
 
 
-class PostsActivity : AppCompatActivity() {
+class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
 
     private val locationReqId: Int = 1
     private lateinit var binding: ActivityMainBinding
@@ -115,7 +113,7 @@ class PostsActivity : AppCompatActivity() {
 
     private fun setupPostsRecyclerView() {
         recyclerView = binding.rvPosts
-        postAdapter = PostAdapter(this,userId)
+        postAdapter = PostAdapter(this,userId,this)
 
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
@@ -313,7 +311,7 @@ class PostsActivity : AppCompatActivity() {
                             val post = Post()
                             post.postId = postId
                             post.comments = snapshot.child(Consts.KEY_COMMENTS).value.toString().toInt()
-                            post.likes = snapshot.child(Consts.KEY_LIKES).value.toString().toInt()
+                          //  post.likes = snapshot.child(Consts.KEY_LIKES).value.toString().toInt()
                             post.description = snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
                             post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
 
@@ -324,6 +322,14 @@ class PostsActivity : AppCompatActivity() {
                                 photoUrlsList.add(photoUrl)
                             }
                             post.photoURLs = photoUrlsList
+
+                            // Retrieve liked users as a list
+                            val likedUsersList = mutableListOf<String>()
+                            for (likedUsersSnapshot in snapshot.child(Consts.KEY_LIKED_USERS).children) {
+                                val userId = likedUsersSnapshot.key.toString()
+                                likedUsersList.add(userId)
+                            }
+                            post.liked_users = likedUsersList
 
                             newPosts.add(post)
 
@@ -364,6 +370,47 @@ class PostsActivity : AppCompatActivity() {
         loadPostIDsOfLocation()
         currentPage++
     }
+
+
+    // Assuming postId is the ID of the post being liked
+    /*fun incrementLikeCount(postId: String) {
+
+        firebaseReference.getPostsRef().child(postId).runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val post = currentData.getValue(Post::class.java)
+
+                // Check if the post exists
+                if (post == null) {
+                    // Handle error or return Transaction.success(currentData) if you don't want to create the post
+                    return Transaction.success(currentData)
+                }
+
+                // Increment the likes count
+                post.likes = post.likes + 1
+
+                // Set the updated value
+                currentData.value = post
+
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(
+                databaseError: DatabaseError?,
+                committed: Boolean,
+                currentData: DataSnapshot?
+            ) {
+                if (committed) {
+                    // Like count updated successfully
+                } else {
+                    // Transaction failed, handle error
+                    if (databaseError != null) {
+                        // Handle the error, you might want to retry or inform the user
+                    }
+                }
+            }
+        })
+    }*/
+
 
 
 
@@ -416,6 +463,19 @@ class PostsActivity : AppCompatActivity() {
         fun addFragment(fragment: Fragment, title: String) {
             fragmentList1.add(fragment)
             fragmentTitleList1.add(title)
+        }
+    }
+
+    override fun onItemClick(postId: String, liked: Boolean) {
+     //   incrementLikeCount(postId)
+
+        if (!liked) {
+            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
+                .child(PrefManager.getUserId()).setValue(true)
+        }
+        else{
+            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
+                .child(PrefManager.getUserId()).removeValue()
         }
     }
 }

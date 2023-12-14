@@ -27,6 +27,7 @@ object Consts {
     const val KEY_TIMESTAMP = "timestamp"
     const val KEY_TEXT = "text"
     const val KEY_LIKES = "likes"
+    const val KEY_LIKED_USERS = "liked_users"
     const val KEY_USERS = "users"
     const val KEY_DESCRIPTION = "description"
     const val KEY_PHOTO_URLS = "photoURLs"
