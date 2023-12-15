@@ -13,4 +13,14 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="circle">
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="progressbar" parent="Widget.AppCompat.ProgressBar">
+        <item name="android:colorControlActivated">@color/colorBorder</item>
+
+    </style>
+
+    <color name="colorBorder">#000</color>
 </resources>

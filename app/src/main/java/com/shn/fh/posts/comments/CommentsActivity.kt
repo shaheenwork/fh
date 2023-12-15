@@ -51,7 +51,6 @@ class CommentsActivity : AppCompatActivity() {
 
 
 
-
     }
 
     private fun addComment(comment: String) {

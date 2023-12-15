@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.denzcoskun.imageslider.models.SlideModel
 import com.google.firebase.database.*
 import com.shn.fh.R
 import com.shn.fh.databaseReference.FirebaseReference
@@ -23,6 +24,7 @@ import com.shn.fh.posts.adapter.PostAdapter
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
 import com.shn.fh.utils.Utils
+import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 
 class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
@@ -316,12 +318,15 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
                             post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
 
                             // Retrieve photo URLs as a list
-                            val photoUrlsList = mutableListOf<String>()
+                            val photoSlides = ArrayList<CarouselItem>()
+                          //  val photoUrlsList = mutableListOf<String>()
                             for (photoSnapshot in snapshot.child(Consts.KEY_PHOTO_URLS).children) {
                                 val photoUrl = photoSnapshot.value.toString()
-                                photoUrlsList.add(photoUrl)
+                             //   photoUrlsList.add(photoUrl)
+                                photoSlides.add(CarouselItem(photoUrl,""))
                             }
-                            post.photoURLs = photoUrlsList
+                            post.photoSlides = photoSlides
+
 
                             // Retrieve liked users as a list
                             val likedUsersList = mutableListOf<String>()

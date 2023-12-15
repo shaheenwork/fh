@@ -3,18 +3,21 @@ package com.shn.fh.posts.adapter
 // PostAdapter.kt
 import android.app.Activity
 import android.content.Intent
+import android.media.Image
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.shn.fh.posts.comments.CommentsActivity
+import com.ablanco.zoomy.Zoomy
 import com.shn.fh.R
+import com.shn.fh.posts.comments.CommentsActivity
 import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
+import org.imaginativeworld.whynotimagecarousel.ImageCarousel
 
 
 // PostAdapter.kt
@@ -32,8 +35,10 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         val postIdTextView: TextView = itemView.findViewById(R.id.textPost)
         val likeCountTextView: TextView = itemView.findViewById(R.id.textLikes)
         val commentCountTextView: TextView = itemView.findViewById(R.id.textComments)
-        val photoRecyclerView: RecyclerView = itemView.findViewById(R.id.recyclerPhotos)
-        val BTN_Like: ImageView = itemView.findViewById(R.id.btn_like)
+//        val photoRecyclerView: RecyclerView = itemView.findViewById(R.id.recyclerPhotos)
+        val imageSlider = itemView.findViewById<ImageCarousel>(R.id.image_slider)
+        val BTN_Like: LinearLayout = itemView.findViewById(R.id.btn_like)
+        val likeIcon: ImageView = itemView.findViewById(R.id.likeimage)
 
     }
 
@@ -42,7 +47,7 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         notifyDataSetChanged()
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_feed_post, parent, false)
         return PostViewHolder(view)
     }
 
@@ -50,18 +55,33 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         val post = posts[position]
         holder.postIdTextView.text = post.description
         holder.likeCountTextView.text = (post.liked_users.size).toString() + " likes"
-        holder.commentCountTextView.text = (post.comments).toString() + " comments"
+        holder.commentCountTextView.text = (post.comments).toString() + " comments 11 Shares"
+
+        //like button color change
         if (post.liked_users.isNotEmpty() && post.liked_users.contains(userId)){
-            holder.BTN_Like.setColorFilter(ContextCompat.getColor(context, R.color.red));
+            holder.likeIcon.setColorFilter(ContextCompat.getColor(context, R.color.purple_500));
         }
         else{
-            holder.BTN_Like.setColorFilter(ContextCompat.getColor(context, R.color.purple_700));
+            holder.likeIcon.setColorFilter(ContextCompat.getColor(context, R.color.black));
         }
 
-        // Set up RecyclerView for photos
+        /*// Set up RecyclerView for photos
         val photoAdapter = PhotoAdapter(post.photoURLs,context) // You need to create a PhotoAdapter
         holder.photoRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
         holder.photoRecyclerView.adapter = photoAdapter
+*/
+        holder.imageSlider.setData(post.photoSlides)
+        holder.imageSlider.showTopShadow = false
+        holder.imageSlider.showCaption= false
+        holder.imageSlider.showNavigationButtons=false
+        holder.imageSlider.autoPlay=false
+       /* val builder: Zoomy.Builder = Zoomy.Builder(context as Activity).target(holder.BTN_Like)
+        builder.register()*/
+        holder.imageSlider.setOnClickListener{
+
+        }
+
+
 
         holder.postIdTextView.setOnClickListener{
             val intent = Intent(context, CommentsActivity::class.java)
