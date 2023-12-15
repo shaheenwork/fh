@@ -410,6 +410,18 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
                                 !snapshot.child(Consts.KEY_DESCRIPTION).value.toString().contains(searchTerm, ignoreCase = true)
                             ) {
                                 notIncludedPostCount++
+                                if (newPosts.size == (dataSnapshot.childrenCount.toInt()-notIncludedPostCount)) {
+                                    postAdapter.addPosts(newPosts)
+
+                                    if (newPosts.size < postsPerPage) {
+                                        isLastPage = true
+                                    }
+
+                                    // Update lastPostId only after processing all posts
+                                    lastPostId = newPosts[newPosts.size - 1].postId
+
+                                    isLoading = false
+                                }
                                 return
                             }
 
