@@ -69,7 +69,10 @@ dependencies {
     implementation 'me.relex:circleindicator:2.1.6'
     implementation 'org.imaginativeworld.whynotimagecarousel:whynotimagecarousel:2.1.0'
     implementation 'io.github.imablanco:zoomy:1.0.0'
-    implementation 'com.github.ihsanbal:Wiv:1.0.0'
+    implementation ('com.github.stfalcon:frescoimageviewer:0.5.0')
+    {
+        exclude group: 'com.android.support', module: 'support-compat'
+    }
 
 
 }

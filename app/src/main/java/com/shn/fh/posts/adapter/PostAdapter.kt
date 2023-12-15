@@ -77,9 +77,7 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         holder.imageSlider.autoPlay=false
        /* val builder: Zoomy.Builder = Zoomy.Builder(context as Activity).target(holder.BTN_Like)
         builder.register()*/
-        holder.imageSlider.setOnClickListener{
 
-        }
 
 
 
@@ -121,5 +119,15 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         posts.addAll(filteredPosts)
         notifyDataSetChanged()
     }
+
+
+
+
+
+
+
+
+
+
 }
 
