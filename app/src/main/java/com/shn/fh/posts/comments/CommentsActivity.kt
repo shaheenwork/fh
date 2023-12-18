@@ -129,7 +129,7 @@ class CommentsActivity : AppCompatActivity() {
 
         query.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val neComments = mutableListOf<Comment>()
+                val newComments = mutableListOf<Comment>()
 
                 for (commentsSnapshot in dataSnapshot.children) {
 
@@ -139,18 +139,18 @@ class CommentsActivity : AppCompatActivity() {
                     comment.text = commentsSnapshot.child(Consts.KEY_TEXT).value.toString()
                     comment.timestamp = commentsSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
 
-                    neComments.add(comment)
+                    newComments.add(comment)
 
                     // Check if all posts have been processed
-                    if (neComments.size == dataSnapshot.childrenCount.toInt()) {
-                        adapter.addComments(neComments)
+                    if (newComments.size == dataSnapshot.childrenCount.toInt()) {
+                        adapter.addComments(newComments)
 
-                        if (neComments.size < commentsPerPage) {
+                        if (newComments.size < commentsPerPage) {
                             isLastPage = true
                         }
 
                         // Update lastPostId only after processing all posts
-                        lastCommentId = neComments[neComments.size - 1].commentId
+                        lastCommentId = newComments[newComments.size - 1].commentId
 
                         isLoading = false
                     }

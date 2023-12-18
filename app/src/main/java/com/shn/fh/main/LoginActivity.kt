@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -82,6 +83,20 @@ class LoginActivity : AppCompatActivity() {
 
     private fun proceedToMainActivity() {
         val intent = Intent(this, PostsActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+    private fun proceedToAccountSetupActivity(
+        userId: String,
+        name: String?,
+        photoUrl: Uri?,
+        email: String?
+    ) {
+        val intent = Intent(this, AccountSetupActivity::class.java)
+        intent.putExtra(Consts.KEY_DISPLAY_NAME,name)
+        intent.putExtra(Consts.KEY_EMAIL,email)
+        intent.putExtra(Consts.KEY_PHOTO_URL,photoUrl)
+        intent.putExtra(Consts.KEY_USER_ID,userId)
         startActivity(intent)
         finish()
     }
@@ -169,7 +184,8 @@ class LoginActivity : AppCompatActivity() {
                         // User doesn't exist, proceed with the sign-up process
                         if (Consts.DEBUGGABLE)
                             Log.d(tag, "not exist")
-                        signUpUser(userId, account)
+                        //signUpUser(userId, account)
+                        proceedToAccountSetupActivity(userId,account.displayName,account.photoUrl,account.email)
                     }
                 }
 

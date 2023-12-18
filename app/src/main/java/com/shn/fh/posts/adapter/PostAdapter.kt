@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.ablanco.zoomy.Zoomy
+import com.bumptech.glide.Glide
 import com.shn.fh.R
 import com.shn.fh.posts.comments.CommentsActivity
 import com.shn.fh.posts.models.Post
@@ -34,6 +35,8 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val postIdTextView: TextView = itemView.findViewById(R.id.textPost)
         val likeCountTextView: TextView = itemView.findViewById(R.id.textLikes)
+        val profilePic: ImageView = itemView.findViewById(R.id.iv_profile)
+        val TV_postmanName: TextView = itemView.findViewById(R.id.tv_fullName)
         val commentCountTextView: TextView = itemView.findViewById(R.id.textComments)
 //        val photoRecyclerView: RecyclerView = itemView.findViewById(R.id.recyclerPhotos)
         val imageSlider = itemView.findViewById<ImageCarousel>(R.id.image_slider)
@@ -56,6 +59,12 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         holder.postIdTextView.text = post.description
         holder.likeCountTextView.text = (post.liked_users.size).toString() + " likes"
         holder.commentCountTextView.text = (post.comments).toString() + " comments 11 Shares"
+
+        holder.TV_postmanName.text = (post.postmanName)
+
+        Glide.with(context)
+            .load(post.postmanPhoto)
+            .into(holder.profilePic)
 
         //like button color change
         if (post.liked_users.isNotEmpty() && post.liked_users.contains(userId)){

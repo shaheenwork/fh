@@ -450,21 +450,42 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
                             }
                             post.liked_users = likedUsersList
 
-                            newPosts.add(post)
 
-                            // Check if all posts have been processed
-                            if (newPosts.size == (dataSnapshot.childrenCount.toInt()-notIncludedPostCount)) {
-                                postAdapter.addPosts(newPosts)
+                            //get user details
+                            val userDatabaseReference = firebaseReference.getUsersRef().child(post.userId)
+                            userDatabaseReference.addListenerForSingleValueEvent(object:ValueEventListener{
+                                override fun onDataChange(snapshot: DataSnapshot) {
 
-                                if (newPosts.size < postsPerPage) {
-                                    isLastPage = true
+                                    post.postmanName = snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
+                                    post.postmanPhoto = snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
+
+
+                                    newPosts.add(post)
+
+                                    // Check if all posts have been processed
+                                    if (newPosts.size == (dataSnapshot.childrenCount.toInt()-notIncludedPostCount)) {
+                                        postAdapter.addPosts(newPosts)
+
+                                        if (newPosts.size < postsPerPage) {
+                                            isLastPage = true
+                                        }
+
+                                        // Update lastPostId only after processing all posts
+                                        lastPostId = newPosts[newPosts.size - 1].postId
+
+                                        isLoading = false
+                                    }
+
+
+
                                 }
 
-                                // Update lastPostId only after processing all posts
-                                lastPostId = newPosts[newPosts.size - 1].postId
+                                override fun onCancelled(error: DatabaseError) {
 
-                                isLoading = false
-                            }
+                                }
+                            })
+
+
                         }
 
                         override fun onCancelled(error: DatabaseError) {
