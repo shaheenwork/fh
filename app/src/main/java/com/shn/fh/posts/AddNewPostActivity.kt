@@ -1,16 +1,28 @@
 package com.shn.fh.posts
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
+import android.location.Location
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -23,6 +35,7 @@ import com.shn.fh.utils.PrefManager
 import id.zelory.compressor.Compressor
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.*
 
 class AddNewPostActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddNewPostBinding
@@ -31,6 +44,11 @@ class AddNewPostActivity : AppCompatActivity() {
     private lateinit var locationdatabaseReference: DatabaseReference
     private lateinit var selectedLocation: String
     private lateinit var actualImage: File
+
+    private lateinit var mFusedLocationClient: FusedLocationProviderClient
+    private val permissionId = 2
+    private var user_lat: Double = 0.0
+    private var user_lngt: Double = 0.0
 
 
     //photo
@@ -100,6 +118,9 @@ class AddNewPostActivity : AppCompatActivity() {
         binding = ActivityAddNewPostBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        getLocation()
+
         selectedLocation = intent.getStringExtra(Consts.KEY_LOCATION)!!
 
         PrefManager.getInstance(this)
@@ -140,9 +161,89 @@ class AddNewPostActivity : AppCompatActivity() {
 
     }
 
+
+    @SuppressLint("MissingPermission", "SetTextI18n")
+    private fun getLocation() {
+        if (checkPermissions()) {
+            if (isLocationEnabled()) {
+                mFusedLocationClient.lastLocation.addOnCompleteListener(this) { task ->
+                    val location: Location? = task.result
+                    if (location != null) {
+                        val geocoder = Geocoder(this, Locale.getDefault())
+                        val list: List<Address> =
+                            geocoder.getFromLocation(
+                                location.latitude,
+                                location.longitude,
+                                1
+                            ) as List<Address>
+
+                        user_lat = list[0].latitude
+                        user_lngt = list[0].longitude
+
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Please turn on location", Toast.LENGTH_LONG).show()
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
+            }
+        } else {
+            requestPermissions()
+        }
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        val locationManager: LocationManager =
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
+    }
+
+    private fun checkPermissions(): Boolean {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            return true
+        }
+        return false
+    }
+
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ),
+            permissionId
+        )
+    }
+
+    @SuppressLint("MissingSuperCall")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == permissionId) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                getLocation()
+            }
+        }
+    }
+
     private fun addPost(post: Post) {
 
         post.timestamp = System.currentTimeMillis()
+        post.lat = user_lat
+        post.longt = user_lngt
         postsdatabaseReference.child(post.postId).setValue(post)
         locationdatabaseReference.child(selectedLocation).child(Consts.KEY_POSTS).child(post.postId)
             .setValue(true)

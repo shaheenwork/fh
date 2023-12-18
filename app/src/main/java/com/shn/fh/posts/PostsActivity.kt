@@ -13,7 +13,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.denzcoskun.imageslider.models.SlideModel
 import com.google.firebase.database.*
 import com.shn.fh.R
 import com.shn.fh.databaseReference.FirebaseReference
@@ -432,6 +431,8 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
                             post.description = snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
                             post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
                             post.timestamp = snapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
+                            post.lat = snapshot.child(Consts.KEY_LATITUDE).value.toString().toDouble()
+                            post.longt = snapshot.child(Consts.KEY_LONGITUDE).value.toString().toDouble()
 
                             // Retrieve photo URLs as a list
                             val photoSlides = ArrayList<CarouselItem>()

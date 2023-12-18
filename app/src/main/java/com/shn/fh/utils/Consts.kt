@@ -25,6 +25,8 @@ object Consts {
     const val KEY_COMMENT_ID = "commentId"
     const val KEY_USER_ID = "userId"
     const val KEY_TIMESTAMP = "timestamp"
+    const val KEY_LATITUDE = "lat"
+    const val KEY_LONGITUDE = "longt"
     const val KEY_TEXT = "text"
     const val KEY_LIKES = "likes"
     const val KEY_LIKED_USERS = "liked_users"

@@ -74,6 +74,8 @@ class Utils {
             return  cityName;
         }
 
+
+
         fun getTimeAgo(timestamp: Long): String {
             val currentTime = System.currentTimeMillis()
             val timeDifference = currentTime - timestamp
@@ -91,11 +93,11 @@ class Utils {
             val seconds = timeDifference % minutesInMilli / secondsInMilli
 
             return when {
-                weeks > 0 -> "$weeks week${if (weeks > 1) "s" else ""} ago"
-                days > 0 -> "$days day${if (days > 1) "s" else ""} ago"
-                hours > 0 -> "$hours hour${if (hours > 1) "s" else ""} ago"
-                minutes > 0 -> "$minutes min${if (minutes > 1) "s" else ""} ago"
-                else -> "$seconds sec${if (seconds > 1) "s" else ""} ago"
+                weeks > 0 -> "$weeks week${if (weeks > 1) "s" else ""}"
+                days > 0 -> "$days day${if (days > 1) "s" else ""}"
+                hours > 0 -> "$hours hour${if (hours > 1) "s" else ""}"
+                minutes > 0 -> "$minutes min${if (minutes > 1) "s" else ""}"
+                else -> "$seconds sec${if (seconds > 1) "s" else ""}"
             }
         }
 

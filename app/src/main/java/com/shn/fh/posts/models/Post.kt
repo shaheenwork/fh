@@ -1,6 +1,5 @@
 package com.shn.fh.posts.models
 
-import com.denzcoskun.imageslider.models.SlideModel
 import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 data class Post(
@@ -8,6 +7,8 @@ data class Post(
     var userId: String = "",
     var postmanName: String = "",
     var postmanPhoto: String = "",
+    var lat: Double = 0.0,
+    var longt: Double = 0.0,
     var foodSpot: String = "",
     var dish: String = "",
     var description: String = "",
