@@ -18,6 +18,7 @@ import com.shn.fh.R
 import com.shn.fh.posts.comments.CommentsActivity
 import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
+import com.shn.fh.utils.Utils
 import org.imaginativeworld.whynotimagecarousel.ImageCarousel
 
 
@@ -37,6 +38,7 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         val likeCountTextView: TextView = itemView.findViewById(R.id.textLikes)
         val profilePic: ImageView = itemView.findViewById(R.id.iv_profile)
         val TV_postmanName: TextView = itemView.findViewById(R.id.tv_fullName)
+        val TV_timeAgo: TextView = itemView.findViewById(R.id.tv_time)
         val commentCountTextView: TextView = itemView.findViewById(R.id.textComments)
 //        val photoRecyclerView: RecyclerView = itemView.findViewById(R.id.recyclerPhotos)
         val imageSlider = itemView.findViewById<ImageCarousel>(R.id.image_slider)
@@ -61,6 +63,8 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         holder.commentCountTextView.text = (post.comments).toString() + " comments 11 Shares"
 
         holder.TV_postmanName.text = (post.postmanName)
+        holder.TV_timeAgo.text = (Utils
+            .getTimeAgo(post.timestamp))
 
         Glide.with(context)
             .load(post.postmanPhoto)

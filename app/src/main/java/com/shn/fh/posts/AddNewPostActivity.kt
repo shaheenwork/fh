@@ -142,6 +142,7 @@ class AddNewPostActivity : AppCompatActivity() {
 
     private fun addPost(post: Post) {
 
+        post.timestamp = System.currentTimeMillis()
         postsdatabaseReference.child(post.postId).setValue(post)
         locationdatabaseReference.child(selectedLocation).child(Consts.KEY_POSTS).child(post.postId)
             .setValue(true)

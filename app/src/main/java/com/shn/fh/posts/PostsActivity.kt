@@ -431,6 +431,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
                             //  post.likes = snapshot.child(Consts.KEY_LIKES).value.toString().toInt()
                             post.description = snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
                             post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
+                            post.timestamp = snapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
 
                             // Retrieve photo URLs as a list
                             val photoSlides = ArrayList<CarouselItem>()
