@@ -76,6 +76,11 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                 userPic = snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
                 userBio = snapshot.child(Consts.KEY_USER_BIO).value.toString()
                 val following = snapshot.child(Consts.KEY_FOLLOWERS).child(myUserId).exists()
+                val followerCount = snapshot.child(Consts.KEY_FOLLOWERS).childrenCount
+                val followCount = snapshot.child(Consts.KEY_FOLLOWING).childrenCount
+
+                binding.tvFollowingCount.text = followCount.toString()
+                binding.tvFollowersCount.text = followerCount.toString()
 
                 if (myUserId == userId){
                     binding.btnFollow.visibility = View.GONE
@@ -84,11 +89,11 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                     binding.btnFollow.visibility = View.VISIBLE
                     binding.btnFollow.setOnClickListener {
                         if (following) {
-                            userDatabaseReference.child(Consts.KEY_FOLLOWERS).child(myUserId)
-                                .removeValue()
+                            userDatabaseReference.child(Consts.KEY_FOLLOWERS).child(myUserId).removeValue()
+                            firebaseReference.getUsersRef().child(myUserId).child(Consts.KEY_FOLLOWING).child(userId).removeValue()
                         } else {
-                            userDatabaseReference.child(Consts.KEY_FOLLOWERS).child(myUserId)
-                                .setValue(true)
+                            userDatabaseReference.child(Consts.KEY_FOLLOWERS).child(myUserId).setValue(true)
+                            firebaseReference.getUsersRef().child(myUserId).child(Consts.KEY_FOLLOWING).child(userId).setValue(true)
                         }
                     }
                 }
