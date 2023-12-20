@@ -1,6 +1,7 @@
 package com.shn.fh.utils
 
 object Consts {
+
     const val TAB_POSTS = 0
     const val TAB_SPOTS = 1
 
@@ -34,4 +35,6 @@ object Consts {
     const val KEY_USERS = "users"
     const val KEY_DESCRIPTION = "description"
     const val KEY_PHOTO_URLS = "photoURLs"
+    const val KEY_FOLLOWERS = "followers"
+    const val KEY_FOLLOWING = "following"
 }

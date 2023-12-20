@@ -12,21 +12,22 @@ import com.shn.fh.posts.models.Comment
 import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
+import com.shn.fh.utils.Utils
 
 class CommentsActivity : AppCompatActivity() {
     lateinit var postID: String
     private var isLoading = false
     private var isLastPage = false
-    private  var lastCommentId:String = ""
+    private var lastCommentId: String = ""
     private lateinit var adapter: CommentsAdapter
 
 
     private val commentsPerPage = 3
     private var currentPage = 1
     private lateinit var firebaseReference: FirebaseReference
-    private lateinit var commentsDatabaseReference : DatabaseReference
-    private lateinit var binding:ActivityCommentsBinding
-    private lateinit var comments:ArrayList<Comment>
+    private lateinit var commentsDatabaseReference: DatabaseReference
+    private lateinit var binding: ActivityCommentsBinding
+    private lateinit var comments: ArrayList<Comment>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCommentsBinding.inflate(layoutInflater)
@@ -43,12 +44,11 @@ class CommentsActivity : AppCompatActivity() {
 
         binding.BTNPostComment.setOnClickListener {
             val comment = binding.ETComment.text.toString()
-            if (comment.isNotEmpty()){
+            if (comment.isNotEmpty()) {
                 addComment(comment)
             }
 
         }
-
 
 
     }
@@ -57,19 +57,23 @@ class CommentsActivity : AppCompatActivity() {
         val key = commentsDatabaseReference.push().key
         commentsDatabaseReference.child(key!!).child(Consts.KEY_COMMENT_ID).setValue(key)
         commentsDatabaseReference.child(key).child(Consts.KEY_TEXT).setValue(comment)
-        commentsDatabaseReference.child(key).child(Consts.KEY_TIMESTAMP).setValue(System.currentTimeMillis())
-        commentsDatabaseReference.child(key).child(Consts.KEY_USER_ID).setValue(PrefManager.getUserId())
+        commentsDatabaseReference.child(key).child(Consts.KEY_TIMESTAMP)
+            .setValue(System.currentTimeMillis())
+        commentsDatabaseReference.child(key).child(Consts.KEY_USER_ID)
+            .setValue(PrefManager.getUserId())
 
         Toast.makeText(this, "comment added", Toast.LENGTH_LONG).show()
 
-       //load comments
+        //load comments
         adapter.clearComments()
         currentPage = 1
         isLastPage = false
         isLoading = false
-        lastCommentId=""
+        lastCommentId = ""
         incrementCommentsCount(postID)
         getComments()
+
+       // Utils.sendNotificationToUser(PrefManager.getFcmToken(),"sdasd","sadasdsdfdgd")
 
     }
 
@@ -119,7 +123,8 @@ class CommentsActivity : AppCompatActivity() {
         isLoading = true
         // Modify the query based on whether lastPostId is empty
         val query = if (lastCommentId.isNotEmpty()) {
-            commentsDatabaseReference.orderByKey().startAfter(lastCommentId).limitToFirst(commentsPerPage)
+            commentsDatabaseReference.orderByKey().startAfter(lastCommentId)
+                .limitToFirst(commentsPerPage)
         } else {
             commentsDatabaseReference.limitToFirst(commentsPerPage)
         }
@@ -131,10 +136,12 @@ class CommentsActivity : AppCompatActivity() {
                 for (commentsSnapshot in dataSnapshot.children) {
 
                     val comment = Comment()
-                    comment.commentId = commentsSnapshot.child(Consts.KEY_COMMENT_ID).value.toString()
+                    comment.commentId =
+                        commentsSnapshot.child(Consts.KEY_COMMENT_ID).value.toString()
                     comment.userId = commentsSnapshot.child(Consts.KEY_USER_ID).value.toString()
                     comment.text = commentsSnapshot.child(Consts.KEY_TEXT).value.toString()
-                    comment.timestamp = commentsSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
+                    comment.timestamp =
+                        commentsSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
 
                     newComments.add(comment)
 
@@ -162,9 +169,8 @@ class CommentsActivity : AppCompatActivity() {
         })
 
 
-
-
     }
+
     private fun loadMoreComments() {
         // Increment currentPage after loading more posts
         getComments()

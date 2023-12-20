@@ -2,12 +2,14 @@ package com.shn.fh
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityUserViewBinding
@@ -21,6 +23,7 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
     PostAdapter.OnProfileClickListener {
     private lateinit var binding: ActivityUserViewBinding
     private lateinit var userId: String
+    private lateinit var myUserId: String
 
     private lateinit var postAdapter: PostAdapter
     private lateinit var recyclerView: RecyclerView
@@ -38,17 +41,23 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
 
 
     private lateinit var firebaseReference: FirebaseReference
+    private lateinit var userDatabaseReference: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUserViewBinding.inflate(layoutInflater)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        PrefManager.getInstance(this)
 
         setContentView(binding.root)
 
         userId = intent.getStringExtra(Consts.KEY_USER_ID)!!
+        myUserId = PrefManager.getUserId()
 
         firebaseReference = FirebaseReference()
+        userDatabaseReference = firebaseReference.getUsersRef().child(userId)
+
+
         getUserInfo(userId)
 
 
@@ -59,7 +68,6 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
 
     private fun getUserInfo(userId: String) {
 
-        val userDatabaseReference = firebaseReference.getUsersRef().child(userId)
         userDatabaseReference.addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -67,6 +75,30 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                 userName = snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
                 userPic = snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
                 userBio = snapshot.child(Consts.KEY_USER_BIO).value.toString()
+                val following = snapshot.child(Consts.KEY_FOLLOWERS).child(myUserId).exists()
+
+                if (myUserId == userId){
+                    binding.btnFollow.visibility = View.GONE
+                }
+                else{
+                    binding.btnFollow.visibility = View.VISIBLE
+                    binding.btnFollow.setOnClickListener {
+                        if (following) {
+                            userDatabaseReference.child(Consts.KEY_FOLLOWERS).child(myUserId)
+                                .removeValue()
+                        } else {
+                            userDatabaseReference.child(Consts.KEY_FOLLOWERS).child(myUserId)
+                                .setValue(true)
+                        }
+                    }
+                }
+
+                if(following){
+                    binding.btnFollow.text = "Following"
+                }
+                else{
+                    binding.btnFollow.text = "Follow"
+                }
 
                 Glide.with(applicationContext)
                     .load(userPic)

@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.RemoteMessage
 import com.shn.fh.R
 import java.util.*
 
@@ -100,6 +102,7 @@ class Utils {
                 else -> "$seconds sec${if (seconds > 1) "s" else ""}"
             }
         }
+
 
 
     }

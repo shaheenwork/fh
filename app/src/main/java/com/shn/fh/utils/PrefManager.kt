@@ -8,6 +8,7 @@ object PrefManager {
 
     private const val isLogin = "isLogin"
     private const val userId = "userId"
+    private const val fcm_token = "fcm_token"
 
     private var preferences : SharedPreferences ?= null
 
@@ -34,6 +35,12 @@ object PrefManager {
     }
     fun getIsLogin(): Boolean {
         return preferences?.getBoolean(isLogin,false)!!
+    }
+    fun setFcmToken(value: String) {
+        putString(fcm_token, value)
+    }
+    fun getFcmToken(): String {
+        return preferences?.getString(fcm_token,"")!!
     }
 
 
