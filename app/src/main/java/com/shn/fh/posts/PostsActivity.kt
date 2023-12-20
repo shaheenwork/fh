@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.*
 import com.shn.fh.R
+import com.shn.fh.UserViewActivity
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
 import com.shn.fh.posts.models.Location
@@ -26,7 +27,7 @@ import com.shn.fh.utils.Utils
 import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 
-class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
+class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, PostAdapter.OnProfileClickListener {
 
     private val locationReqId: Int = 1
     private lateinit var binding: ActivityMainBinding
@@ -123,7 +124,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
 
     private fun setupPostsRecyclerView() {
         recyclerView = binding.rvPosts
-        postAdapter = PostAdapter(this,userId,this)
+        postAdapter = PostAdapter(this,userId,this,this)
 
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
@@ -410,7 +411,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
                             ) {
                                 notIncludedPostCount++
                                 if (newPosts.size == (dataSnapshot.childrenCount.toInt()-notIncludedPostCount)) {
-                                    postAdapter.addPosts(newPosts)
+                                    postAdapter.addPosts(newPosts,true)
 
                                     if (newPosts.size < postsPerPage) {
                                         isLastPage = true
@@ -466,7 +467,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
 
                                     // Check if all posts have been processed
                                     if (newPosts.size == (dataSnapshot.childrenCount.toInt()-notIncludedPostCount)) {
-                                        postAdapter.addPosts(newPosts)
+                                        postAdapter.addPosts(newPosts,true)
 
                                         if (newPosts.size < postsPerPage) {
                                             isLastPage = true
@@ -608,7 +609,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
         }
     }
 
-    override fun onItemClick(postId: String, liked: Boolean) {
+    override fun onLikeClick(postId: String, liked: Boolean) {
      //   incrementLikeCount(postId)
 
         if (!liked) {
@@ -619,5 +620,12 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnItemClickListener {
             firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
                 .child(PrefManager.getUserId()).removeValue()
         }
+    }
+
+    override fun onProfileClick(userId: String) {
+        val intent = Intent(this, UserViewActivity::class.java)
+        intent.putExtra(Consts.KEY_USER_ID,userId)
+        startActivity(intent)
+
     }
 }

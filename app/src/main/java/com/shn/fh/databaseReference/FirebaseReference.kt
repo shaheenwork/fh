@@ -11,7 +11,7 @@ class FirebaseReference {
         private var databaseReference: DatabaseReference = database.reference
     }
 
-    fun getRootReference(): DatabaseReference {
+    private fun getRootReference(): DatabaseReference {
         return databaseReference.child("test1")
     }
 

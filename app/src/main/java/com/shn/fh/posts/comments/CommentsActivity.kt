@@ -62,8 +62,7 @@ class CommentsActivity : AppCompatActivity() {
 
         Toast.makeText(this, "comment added", Toast.LENGTH_LONG).show()
 
-
-        //load comments
+       //load comments
         adapter.clearComments()
         currentPage = 1
         isLastPage = false
@@ -74,17 +73,15 @@ class CommentsActivity : AppCompatActivity() {
 
     }
 
-    fun incrementCommentsCount(postId: String) {
+    private fun incrementCommentsCount(postId: String) {
 
         firebaseReference.getPostsRef().child(postId).runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {
                 val post = currentData.getValue(Post::class.java)
+                    ?: // Handle error or return Transaction.success(currentData) if you don't want to create the post
+                    return Transaction.success(currentData)
 
                 // Check if the post exists
-                if (post == null) {
-                    // Handle error or return Transaction.success(currentData) if you don't want to create the post
-                    return Transaction.success(currentData)
-                }
 
                 // Increment the likes count
                 post.comments = post.comments + 1

@@ -18,6 +18,7 @@ object Consts {
     //firebase keys
     const val KEY_EMAIL = "email"
     const val KEY_DISPLAY_NAME = "displayName"
+    const val KEY_USER_BIO = "bio"
     const val KEY_PHOTO_URL = "profilePicture"
     const val KEY_LOCATIONS = "locations"
     const val KEY_POSTS = "posts"

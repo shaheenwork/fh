@@ -21,14 +21,18 @@ import org.imaginativeworld.whynotimagecarousel.ImageCarousel
 
 
 // PostAdapter.kt
-class PostAdapter(context: android.content.Context, userId:String, private val listener:OnItemClickListener) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+class PostAdapter(context: android.content.Context, userId:String, private val likeListener:OnLikeClickListener, private val profileClickListener: OnProfileClickListener) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     private val posts: MutableList<Post> = mutableListOf()
     private val context=context
     private val userId = userId
 
-    interface OnItemClickListener {
-        fun onItemClick(postId: String, liked: Boolean)
+    interface OnLikeClickListener {
+        fun onLikeClick(postId: String, liked: Boolean)
+    }
+
+    interface OnProfileClickListener{
+        fun onProfileClick(userId: String)
     }
 
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -38,7 +42,7 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         val TV_postmanName: TextView = itemView.findViewById(R.id.tv_fullName)
         val TV_timeAgo: TextView = itemView.findViewById(R.id.tv_time)
         val commentCountTextView: TextView = itemView.findViewById(R.id.textComments)
-//        val photoRecyclerView: RecyclerView = itemView.findViewById(R.id.recyclerPhotos)
+//      val photoRecyclerView: RecyclerView = itemView.findViewById(R.id.recyclerPhotos)
         val imageSlider = itemView.findViewById<ImageCarousel>(R.id.image_slider)
         val BTN_Like: LinearLayout = itemView.findViewById(R.id.btn_like)
         val likeIcon: ImageView = itemView.findViewById(R.id.likeimage)
@@ -115,7 +119,11 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
                 posts[position].liked_users = new
             }
             notifyItemChanged(position)
-            listener.onItemClick(posts[position].postId,liked)
+            likeListener.onLikeClick(posts[position].postId,liked)
+        }
+
+        holder.profilePic.setOnClickListener {
+            profileClickListener.onProfileClick(posts[position].userId)
         }
     }
 
@@ -123,12 +131,17 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         return posts.size
     }
 
-    fun addPosts(newPosts: List<Post>) {
+    fun addPosts(newPosts: List<Post>,filter:Boolean) {
         // filter out user's own posts
-        val filteredPosts = newPosts.filter { post ->
-            post.userId!=userId
+        if (filter) {
+            val filteredPosts = newPosts.filter { post ->
+                post.userId != userId
+            }
+            posts.addAll(filteredPosts)
         }
-        posts.addAll(filteredPosts)
+        else{
+            posts.addAll(newPosts)
+        }
         notifyDataSetChanged()
     }
 

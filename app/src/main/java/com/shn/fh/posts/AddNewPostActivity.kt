@@ -42,6 +42,7 @@ class AddNewPostActivity : AppCompatActivity() {
     private lateinit var firebaseReference: FirebaseReference
     private lateinit var postsdatabaseReference: DatabaseReference
     private lateinit var locationdatabaseReference: DatabaseReference
+    private lateinit var usersdatabaseReference: DatabaseReference
     private lateinit var selectedLocation: String
     private lateinit var actualImage: File
 
@@ -106,7 +107,7 @@ class AddNewPostActivity : AppCompatActivity() {
 
     }
 
-    private fun getFileName(): String? {
+    private fun getFileName(): String {
 
         return PrefManager.getUserId() + "_" + System.currentTimeMillis()
 
@@ -128,6 +129,7 @@ class AddNewPostActivity : AppCompatActivity() {
         firebaseReference = FirebaseReference()
         postsdatabaseReference = firebaseReference.getPostsRef()
         locationdatabaseReference = firebaseReference.getLocationsRef()
+        usersdatabaseReference = firebaseReference.getUsersRef()
 
         storageRef = FirebaseStorage.getInstance().reference.child("post_photos")
 
@@ -245,6 +247,7 @@ class AddNewPostActivity : AppCompatActivity() {
         post.lat = user_lat
         post.longt = user_lngt
         postsdatabaseReference.child(post.postId).setValue(post)
+        usersdatabaseReference.child(post.userId).child(Consts.KEY_POSTS).child(post.postId).setValue(true)
         locationdatabaseReference.child(selectedLocation).child(Consts.KEY_POSTS).child(post.postId)
             .setValue(true)
         Toast.makeText(this, "post added", Toast.LENGTH_LONG).show()
