@@ -21,17 +21,21 @@ import org.imaginativeworld.whynotimagecarousel.ImageCarousel
 
 
 // PostAdapter.kt
-class PostAdapter(context: android.content.Context, userId:String, private val likeListener:OnLikeClickListener, private val profileClickListener: OnProfileClickListener) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+class PostAdapter(
+    private val context: android.content.Context,
+    private val userId: String,
+    private val likeListener: OnLikeClickListener,
+    private val profileClickListener: OnProfileClickListener
+) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     private val posts: MutableList<Post> = mutableListOf()
-    private val context=context
-    private val userId = userId
+    val PAYLOAD_LIKE = "PAYLOAD_LIKE"
 
     interface OnLikeClickListener {
         fun onLikeClick(postId: String, liked: Boolean)
     }
 
-    interface OnProfileClickListener{
+    interface OnProfileClickListener {
         fun onProfileClick(userId: String)
     }
 
@@ -42,7 +46,8 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         val TV_postmanName: TextView = itemView.findViewById(R.id.tv_fullName)
         val TV_timeAgo: TextView = itemView.findViewById(R.id.tv_time)
         val commentCountTextView: TextView = itemView.findViewById(R.id.textComments)
-//      val photoRecyclerView: RecyclerView = itemView.findViewById(R.id.recyclerPhotos)
+
+        //      val photoRecyclerView: RecyclerView = itemView.findViewById(R.id.recyclerPhotos)
         val imageSlider = itemView.findViewById<ImageCarousel>(R.id.image_slider)
         val BTN_Like: LinearLayout = itemView.findViewById(R.id.btn_like)
         val likeIcon: ImageView = itemView.findViewById(R.id.likeimage)
@@ -53,8 +58,10 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         posts.clear()
         notifyDataSetChanged()
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_feed_post, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.item_feed_post, parent, false)
         return PostViewHolder(view)
     }
 
@@ -67,17 +74,20 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         holder.TV_postmanName.text = (post.postmanName)
         holder.TV_timeAgo.text = (Utils
             .getTimeAgo(post.timestamp))
-        holder.TV_timeAgo.text = holder.TV_timeAgo.text.toString() + " • "+ Utils.getCityName(post.lat,post.longt,context)
+        holder.TV_timeAgo.text = holder.TV_timeAgo.text.toString() + " • " + Utils.getCityName(
+            post.lat,
+            post.longt,
+            context
+        )
 
         Glide.with(context)
             .load(post.postmanPhoto)
             .into(holder.profilePic)
 
         //like button color change
-        if (post.liked_users.isNotEmpty() && post.liked_users.contains(userId)){
+        if (post.liked_users.isNotEmpty() && post.liked_users.contains(userId)) {
             holder.likeIcon.setColorFilter(ContextCompat.getColor(context, R.color.purple_500));
-        }
-        else{
+        } else {
             holder.likeIcon.setColorFilter(ContextCompat.getColor(context, R.color.black));
         }
 
@@ -88,38 +98,37 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
 */
         holder.imageSlider.setData(post.photoSlides)
         holder.imageSlider.showTopShadow = false
-        holder.imageSlider.showCaption= false
-        holder.imageSlider.showNavigationButtons=false
-        holder.imageSlider.autoPlay=false
-       /* val builder: Zoomy.Builder = Zoomy.Builder(context as Activity).target(holder.BTN_Like)
-        builder.register()*/
+        holder.imageSlider.showCaption = false
+        holder.imageSlider.showNavigationButtons = false
+        holder.imageSlider.autoPlay = false
+        /* val builder: Zoomy.Builder = Zoomy.Builder(context as Activity).target(holder.BTN_Like)
+         builder.register()*/
 
 
 
 
-        holder.postIdTextView.setOnClickListener{
+        holder.postIdTextView.setOnClickListener {
             val intent = Intent(context, CommentsActivity::class.java)
-            intent.putExtra(Consts.KEY_POST_ID,post.postId)
+            intent.putExtra(Consts.KEY_POST_ID, post.postId)
 
             (context as Activity).startActivity(intent)
 
-            context.overridePendingTransition(R.anim.slide_up,0)
+            context.overridePendingTransition(R.anim.slide_up, 0)
 
         }
         holder.BTN_Like.setOnClickListener {
             val liked = posts[position].liked_users.contains(userId)
-            if (liked){
+            if (liked) {
                 val new = posts[position].liked_users.toMutableList()
                 new.remove(userId)
                 posts[position].liked_users = new
-            }
-            else{
+            } else {
                 val new = posts[position].liked_users.toMutableList()
                 new.add(userId)
                 posts[position].liked_users = new
             }
-            notifyItemChanged(position)
-            likeListener.onLikeClick(posts[position].postId,liked)
+            notifyItemChanged(position,PAYLOAD_LIKE)
+            likeListener.onLikeClick(posts[position].postId, liked)
         }
 
         holder.profilePic.setOnClickListener {
@@ -127,31 +136,47 @@ class PostAdapter(context: android.content.Context, userId:String, private val l
         }
     }
 
+    override fun onBindViewHolder(
+        holder: PostViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        if (payloads.isNotEmpty()) {
+
+           for (payload in payloads){
+               if (payload == PAYLOAD_LIKE){
+                   //like button color change
+                   if (posts[position].liked_users.isNotEmpty() && posts[position].liked_users.contains(userId)) {
+                       holder.likeIcon.setColorFilter(ContextCompat.getColor(context, R.color.purple_500));
+                   } else {
+                       holder.likeIcon.setColorFilter(ContextCompat.getColor(context, R.color.black));
+                   }
+                   holder.likeCountTextView.text = (posts[position].liked_users.size).toString() + " likes"
+               }
+           }
+
+
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
+        }
+    }
+
     override fun getItemCount(): Int {
         return posts.size
     }
 
-    fun addPosts(newPosts: List<Post>,filter:Boolean) {
+    fun addPosts(newPosts: List<Post>, filter: Boolean) {
         // filter out user's own posts
         if (filter) {
             val filteredPosts = newPosts.filter { post ->
                 post.userId != userId
             }
             posts.addAll(filteredPosts)
-        }
-        else{
+        } else {
             posts.addAll(newPosts)
         }
         notifyDataSetChanged()
     }
-
-
-
-
-
-
-
-
 
 
 }

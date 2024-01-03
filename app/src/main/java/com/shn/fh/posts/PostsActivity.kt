@@ -115,11 +115,6 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
                 .show()
         }
 
-        /*10 mf
-        * 20c
-        * 5fs
-        * 20chlv*/
-
     }
 
     private fun setupPostsRecyclerView() {
