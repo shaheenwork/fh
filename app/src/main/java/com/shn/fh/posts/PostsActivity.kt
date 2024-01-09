@@ -66,8 +66,12 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
             lastPostId=""
             loadPostIDsOfLocation(binding.etSearch.text.toString())*/
 
-            setupPostsRecyclerView()
-            getFollowingPosts("biryani")
+            postAdapter.clearPosts()
+            currentPage = 1
+            isLastPage = false
+            isLoading = false
+            lastPostId=""
+            getFollowingPosts("", "userId1")
         }
 
         binding.addBtn.setOnClickListener {
@@ -104,7 +108,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
         /* setUpTabLayout()
  */
 
-       /* // ask for location permission
+        // ask for location permission
         if (!Utils.checkIfAccessFineLocationGranted(this)) {
             Utils.requestLocationPermission(
                 this, locationReqId
@@ -116,16 +120,15 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
 
             Toast.makeText(this, Utils.getCityName(10.79185, 76.19365, this), Toast.LENGTH_LONG)
                 .show()
-        }*/
+        }
 
 
 
     }
 
-    private fun getFollowingPosts(searchTerm: String){
+    private fun getFollowingPosts(searchTerm: String, currentUserId:String){
         val database = firebaseReference.getUsersRef()
 
-        val currentUserId = "userId1"
 
         val followingRef = database.child(currentUserId).child(Consts.KEY_FOLLOWING)
 
@@ -143,18 +146,20 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
                         var totalfollowingPostCount = 0 //search
 
                         // List to store posts only from users that the current user follows
-                        val postsFromFollowingUsers = postsSnapshot.children
+                        val postsFromFollowingUsersFromLocation = postsSnapshot.children
                             .filter { followingUsers.contains(it.child(Consts.KEY_USER_ID).value.toString()) }
+                            .filter { postSnapshot ->
+                                // Check if the post belongs to the target location
+                                val postLocationId = postSnapshot.child(Consts.KEY_LOCATION_ID).value.toString()
+                                postLocationId == selectedLocation
+                            }
                             .map { postSnapshot ->
-                                // Convert the map to a list for liked_users
-
-                                // Create a Post object with the liked_users field as a list
 
                                 // Skip the post if it doesn't match the search term
                                 if (searchTerm.isNotEmpty() &&
                                     !postSnapshot.child(Consts.KEY_DESCRIPTION).value.toString().contains(searchTerm, ignoreCase = true)
                                 ) {
-                                   
+
                                     if (list.size == (postsSnapshot.childrenCount.toInt()-totalfollowingPostCount)) {
                                         postAdapter.addPosts(list,true)
 
@@ -184,18 +189,13 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
 
                                 // Retrieve photo URLs as a list
                                 val photoSlides = ArrayList<CarouselItem>()
-                                //  val photoUrlsList = mutableListOf<String>()
                                 for (photoSnapshot in postSnapshot.child(Consts.KEY_PHOTO_URLS).children) {
                                     val photoUrl = photoSnapshot.value.toString()
-                                    //   photoUrlsList.add(photoUrl)
                                     photoSlides.add(CarouselItem(photoUrl, ""))
                                 }
                                 post.photoSlides = photoSlides
-                                /*val likedUsersMap = postSnapshot.child(Consts.KEY_LIKED_USERS).value as Map<String, Boolean>
-                                post.liked_users = likedUsersMap.keys.toList()*/
 
-
-                                //get user details
+                                //get posted user details
                                 val userDatabaseReference = firebaseReference.getUsersRef().child(post.userId)
                                 userDatabaseReference.addListenerForSingleValueEvent(object:ValueEventListener{
                                     override fun onDataChange(snapshot: DataSnapshot) {
@@ -214,9 +214,6 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
                                                 isLastPage = true
                                             }
 
-                                            // Update lastPostId only after processing all posts
-                                            lastPostId = list[list.size - 1].postId
-
                                             isLoading = false
                                         }
 
@@ -231,9 +228,6 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
 
 
                             }
-
-                        // Now, postsFromFollowingUsers contains posts only from users that the current user follows
-                        println(list)
                     }
 
                     override fun onCancelled(error: DatabaseError) {

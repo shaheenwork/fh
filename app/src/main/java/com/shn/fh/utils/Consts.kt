@@ -22,6 +22,7 @@ object Consts {
     const val KEY_USER_BIO = "bio"
     const val KEY_PHOTO_URL = "profilePicture"
     const val KEY_LOCATIONS = "locations"
+    const val KEY_LOCATION_ID = "location_id"
     const val KEY_POSTS = "posts"
     const val KEY_COMMENTS = "comments"
     const val KEY_COMMENT_ID = "commentId"
