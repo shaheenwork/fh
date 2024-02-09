@@ -3,6 +3,7 @@ package com.shn.fh.posts
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -27,13 +28,14 @@ import com.shn.fh.utils.Utils
 import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 
-class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, PostAdapter.OnProfileClickListener {
+class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
+    PostAdapter.OnProfileClickListener {
 
     private val locationReqId: Int = 1
     private lateinit var binding: ActivityMainBinding
     private lateinit var firebaseReference: FirebaseReference
 
-    private lateinit var userId:String
+    private lateinit var userId: String
 
     private lateinit var locationsList: ArrayList<Location>
     private var selectedTab: Int = Consts.TAB_POSTS
@@ -44,11 +46,14 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
 
     private var isLoading = false
     private var isLastPage = false
-    private  var lastPostId:String? = null
+    private var lastPostId: String? = null
 
-    private val postsPerPage = 2
+    private val postsPerPage = 3
     private var currentPage = 1
     private lateinit var selectedLocation: String
+
+    private var folowingPostOnlyFlag: Boolean = false
+    private lateinit var usersFollowingUsers:List<String?>
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,31 +62,26 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
         setContentView(binding.root)
 
         userId = PrefManager.getUserId()
+        usersFollowingUsers = ArrayList()
 
         binding.btnSearch.setOnClickListener {
-        /*    postAdapter.clearPosts()
-            currentPage = 1
-            isLastPage = false
-            isLoading = false
-            lastPostId=""
-            loadPostIDsOfLocation(binding.etSearch.text.toString())*/
+
+            folowingPostOnlyFlag = true
 
             postAdapter.clearPosts()
             currentPage = 1
             isLastPage = false
             isLoading = false
-            lastPostId=null
-            getFollowingPosts("", "userId1")
+            lastPostId = null
+            loadPostIDsOfLocation(folowingPostOnlyFlag)
         }
 
         binding.addBtn.setOnClickListener {
 
             val intent = Intent(this, AddNewPostActivity::class.java)
-            intent.putExtra(Consts.KEY_LOCATION,selectedLocation)
+            intent.putExtra(Consts.KEY_LOCATION, selectedLocation)
             startActivity(intent)
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)
-
-
 
 
             /* when (selectedTab) {
@@ -123,114 +123,12 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
         }
 
 
-
-    }
-
-    private fun getFollowingPosts(searchTerm: String, currentUserId:String){
-        val database = firebaseReference.getUsersRef()
-
-        val followingRef = database.child(currentUserId).child(Consts.KEY_FOLLOWING)
-
-        followingRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // List to store user IDs that the current user is following
-                val followingUsers = snapshot.children.map { it.key }.toList()
-
-                // Retrieve posts from the following users
-                val postsRef = firebaseReference.getPostsRef().orderByKey().limitToFirst(postsPerPage)
-                val query = if (lastPostId != null) {
-                    postsRef.startAfter(lastPostId)
-                } else {
-                    postsRef
-                }
-                query.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(postsSnapshot: DataSnapshot) {
-                        var list:ArrayList<Post> = ArrayList()
-                        var totalfollowingPostCount = 0 //search
-
-                        // List to store posts only from users that the current user follows
-                        val postsFromFollowingUsersFromLocation = postsSnapshot.children
-                            .filter { followingUsers.contains(it.child(Consts.KEY_USER_ID).value.toString()) }
-                            .filter { postSnapshot ->
-                                // Check if the post belongs to the target location
-                                val postLocationId = postSnapshot.child(Consts.KEY_LOCATION_ID).value.toString()
-                                postLocationId == selectedLocation
-                            }
-                            .map { postSnapshot ->
-
-                                lastPostId = postSnapshot.key.toString()
-
-                                // Skip the post if it doesn't match the search term
-                                if (searchTerm.isNotEmpty() &&
-                                    !postSnapshot.child(Consts.KEY_DESCRIPTION).value.toString().contains(searchTerm, ignoreCase = true)
-                                ) {
-                                    return@map // Skip to the next iteration
-                                }
-
-                                totalfollowingPostCount++
-
-                                val post = Post()
-                                post.userId = postSnapshot.child(Consts.KEY_USER_ID).value.toString()
-                                post.postId = postSnapshot.key.toString()
-                                post.lat = postSnapshot.child(Consts.KEY_LATITUDE).value.toString().toDouble()
-                                post.longt = postSnapshot.child(Consts.KEY_LONGITUDE).value.toString().toDouble()
-                                post.timestamp = postSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
-                                post.comments = postSnapshot.child(Consts.KEY_COMMENTS).value.toString().toInt()
-                                post.description = postSnapshot.child(Consts.KEY_DESCRIPTION).value.toString()
-
-                                // Retrieve photo URLs as a list
-                                val photoSlides = ArrayList<CarouselItem>()
-                                for (photoSnapshot in postSnapshot.child(Consts.KEY_PHOTO_URLS).children) {
-                                    val photoUrl = photoSnapshot.value.toString()
-                                    photoSlides.add(CarouselItem(photoUrl, ""))
-                                }
-                                post.photoSlides = photoSlides
-
-                                //get posted user details
-                                val userDatabaseReference = firebaseReference.getUsersRef().child(post.userId)
-                                userDatabaseReference.addListenerForSingleValueEvent(object:ValueEventListener{
-                                    override fun onDataChange(snapshot: DataSnapshot) {
-                                        post.postmanName = snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
-                                        post.postmanPhoto = snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
-
-                                        list.add(post)
-
-                                        // Check if all posts have been processed
-                                        if (list.size == totalfollowingPostCount) {
-                                            list.toHashSet()
-                                            postAdapter.addPosts(list,true)
-
-                                            if (list.size < postsPerPage) {
-                                                isLastPage = true
-                                            }
-
-                                            isLoading = false
-                                        }
-                                    }
-
-                                    override fun onCancelled(error: DatabaseError) {
-                                        // Handle the error
-                                    }
-                                })
-                            }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        // Handle the error
-                    }
-                })
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Handle the error
-            }
-        })
     }
 
 
     private fun setupPostsRecyclerView() {
         recyclerView = binding.rvPosts
-        postAdapter = PostAdapter(this,userId,this,this)
+        postAdapter = PostAdapter(this, userId, this, this)
 
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
@@ -396,105 +294,192 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
         currentPage = 1
         isLastPage = false
         isLoading = false
-        lastPostId=null
-        loadPostIDsOfLocation("")
+        lastPostId = null
+        loadPostIDsOfLocation(folowingPostOnlyFlag)
     }
 
-   /* private fun loadPostIDsOfLocation() {
+    private fun loadPostIDsOfLocation(followingPostsOnly: Boolean) {
         if (isLoading || isLastPage) {
             return
         }
 
         isLoading = true
-        val databaseReference = firebaseReference.getLocationsRef().child(selectedLocation).child(Consts.KEY_POSTS)
-        // Modify the query based on whether lastPostId is empty
-        val query = if (lastPostId.isNotEmpty()) {
-            databaseReference.orderByKey().startAfter(lastPostId).limitToFirst(postsPerPage)
+
+        if (followingPostsOnly) {
+
+            if (usersFollowingUsers.isNotEmpty()){
+                //we already have list of users this user follows
+
+                getPostsFromFollowingUsers()
+
+            }
+            else {
+
+
+                val database = firebaseReference.getUsersRef()
+
+                val followingRef = database.child("userId1").child(Consts.KEY_FOLLOWING)
+
+                followingRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        // List to store user IDs that the current user is following
+                        usersFollowingUsers = snapshot.children.map { it.key }.toList()
+                        if (usersFollowingUsers.isEmpty()) {
+                            return
+                        } else {
+                            getPostsFromFollowingUsers()
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+
+                    }
+                })
+            }
         } else {
-            databaseReference.limitToFirst(postsPerPage)
-        }
 
-        query.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val newPosts = mutableListOf<Post>()
+            val databaseReference = firebaseReference.getLocationsRef().child(selectedLocation)
+                .child(Consts.KEY_POSTS)
+            // Modify the query based on whether lastPostId is empty
+            val query = if (lastPostId != null && lastPostId!!.isNotEmpty()) {
+                databaseReference.orderByKey().startAfter(lastPostId).limitToFirst(postsPerPage)
+            } else {
+                databaseReference.limitToFirst(postsPerPage)
+            }
 
-                for (postSnapshot in dataSnapshot.children) {
-                    val postId = postSnapshot.key.toString()
+            query.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val newPosts = mutableListOf<Post>()
+                    var notIncludedPostCount = 0 //search
 
-                    // Load post content
-                    val postDatabaseReference = firebaseReference.getPostsRef().child(postId)
-                    postDatabaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            val post = Post()
-                            post.postId = postId
-                            post.comments = snapshot.child(Consts.KEY_COMMENTS).value.toString().toInt()
-                          //  post.likes = snapshot.child(Consts.KEY_LIKES).value.toString().toInt()
-                            post.description = snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
-                            post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
+                    for (postSnapshot in dataSnapshot.children) {
+                        val postId = postSnapshot.key.toString()
 
-                            // Retrieve photo URLs as a list
-                            val photoSlides = ArrayList<CarouselItem>()
-                          //  val photoUrlsList = mutableListOf<String>()
-                            for (photoSnapshot in snapshot.child(Consts.KEY_PHOTO_URLS).children) {
-                                val photoUrl = photoSnapshot.value.toString()
-                             //   photoUrlsList.add(photoUrl)
-                                photoSlides.add(CarouselItem(photoUrl,""))
-                            }
-                            post.photoSlides = photoSlides
+                        lastPostId = postId
+                        Log.d("shnlog", "last post id 1: " + lastPostId)
 
+                        // Load post content
+                        val postDatabaseReference = firebaseReference.getPostsRef().child(postId)
+                        postDatabaseReference.addListenerForSingleValueEvent(object :
+                            ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                // Skip the post if it doesn't match the search term
+                                if (binding.etSearch.text.toString().isNotEmpty() &&
+                                    !snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
+                                        .contains(
+                                            binding.etSearch.text.toString(),
+                                            ignoreCase = true
+                                        )
+                                ) {
+                                    notIncludedPostCount++
+                                    if (newPosts.size == (dataSnapshot.childrenCount.toInt() - notIncludedPostCount)) {
+                                        postAdapter.addPosts(newPosts, true)
 
-                            // Retrieve liked users as a list
-                            val likedUsersList = mutableListOf<String>()
-                            for (likedUsersSnapshot in snapshot.child(Consts.KEY_LIKED_USERS).children) {
-                                val userId = likedUsersSnapshot.key.toString()
-                                likedUsersList.add(userId)
-                            }
-                            post.liked_users = likedUsersList
+                                        isLoading = false
 
-                            newPosts.add(post)
-
-                            // Check if all posts have been processed
-                            if (newPosts.size == dataSnapshot.childrenCount.toInt()) {
-                                postAdapter.addPosts(newPosts)
-
-                                if (newPosts.size < postsPerPage) {
-                                    isLastPage = true
+                                        if (newPosts.size<postsPerPage){
+                                            isLastPage=false
+                                            loadMorePosts()
+                                        }
+                                    }
+                                    return
                                 }
 
-                                // Update lastPostId only after processing all posts
-                                lastPostId = newPosts[newPosts.size - 1].postId
+                                val post = Post()
+                                post.postId = postId
+                                post.comments =
+                                    snapshot.child(Consts.KEY_COMMENTS).value.toString().toInt()
+                                //  post.likes = snapshot.child(Consts.KEY_LIKES).value.toString().toInt()
+                                post.description =
+                                    snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
+                                post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
+                                post.timestamp =
+                                    snapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
+                                post.lat =
+                                    snapshot.child(Consts.KEY_LATITUDE).value.toString().toDouble()
+                                post.longt =
+                                    snapshot.child(Consts.KEY_LONGITUDE).value.toString().toDouble()
 
+                                // Retrieve photo URLs as a list
+                                val photoSlides = ArrayList<CarouselItem>()
+                                //  val photoUrlsList = mutableListOf<String>()
+                                for (photoSnapshot in snapshot.child(Consts.KEY_PHOTO_URLS).children) {
+                                    val photoUrl = photoSnapshot.value.toString()
+                                    //   photoUrlsList.add(photoUrl)
+                                    photoSlides.add(CarouselItem(photoUrl, ""))
+                                }
+                                post.photoSlides = photoSlides
+
+                                // Retrieve liked users as a list
+                                val likedUsersList = mutableListOf<String>()
+                                for (likedUsersSnapshot in snapshot.child(Consts.KEY_LIKED_USERS).children) {
+                                    val userId = likedUsersSnapshot.key.toString()
+                                    likedUsersList.add(userId)
+                                }
+                                post.liked_users = likedUsersList
+
+
+                                //get user details
+                                val userDatabaseReference =
+                                    firebaseReference.getUsersRef().child(post.userId)
+                                userDatabaseReference.addListenerForSingleValueEvent(object :
+                                    ValueEventListener {
+                                    override fun onDataChange(snapshot: DataSnapshot) {
+
+                                        post.postmanName =
+                                            snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
+                                        post.postmanPhoto =
+                                            snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
+
+
+                                        newPosts.add(post)
+
+                                        // Check if all posts have been processed
+                                        if (newPosts.size == (dataSnapshot.childrenCount.toInt() - notIncludedPostCount)) {
+                                            postAdapter.addPosts(newPosts, true)
+
+                                            if (newPosts.size < postsPerPage) {
+                                                isLastPage = true
+                                            }
+
+                                            isLoading = false
+                                        }
+
+
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {
+
+                                    }
+                                })
+
+
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                // Handle cancellation
                                 isLoading = false
                             }
-                        }
-
-                        override fun onCancelled(error: DatabaseError) {
-                            // Handle cancellation
-                            isLoading = false
-                        }
-                    })
+                        })
+                    }
                 }
-            }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                isLoading = false
-                // Handle error
-            }
-        })
-
-    }*/
-
-    private fun loadPostIDsOfLocation(searchTerm: String) {
-        if (isLoading || isLastPage) {
-            return
+                override fun onCancelled(databaseError: DatabaseError) {
+                    isLoading = false
+                    // Handle error
+                }
+            })
         }
+    }
 
-        isLoading = true
-        val databaseReference = firebaseReference.getLocationsRef().child(selectedLocation)
-            .child(Consts.KEY_POSTS)
+    private fun getPostsFromFollowingUsers() {
+        val databaseReference =
+            firebaseReference.getLocationsRef().child(selectedLocation)
+                .child(Consts.KEY_POSTS)
         // Modify the query based on whether lastPostId is empty
-        val query = if (lastPostId!=null && lastPostId!!.isNotEmpty()) {
-            databaseReference.orderByKey().startAfter(lastPostId).limitToFirst(postsPerPage)
+        val query = if (lastPostId != null && lastPostId!!.isNotEmpty()) {
+            databaseReference.orderByKey().startAfter(lastPostId)
+                .limitToFirst(postsPerPage)
         } else {
             databaseReference.limitToFirst(postsPerPage)
         }
@@ -507,39 +492,60 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
                 for (postSnapshot in dataSnapshot.children) {
                     val postId = postSnapshot.key.toString()
 
+                    lastPostId = postId
+
                     // Load post content
-                    val postDatabaseReference = firebaseReference.getPostsRef().child(postId)
-                    postDatabaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
+                    val postDatabaseReference =
+                        firebaseReference.getPostsRef().child(postId)
+                    postDatabaseReference.addListenerForSingleValueEvent(object :
+                        ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             // Skip the post if it doesn't match the search term
-                            if (searchTerm.isNotEmpty() &&
-                                !snapshot.child(Consts.KEY_DESCRIPTION).value.toString().contains(searchTerm, ignoreCase = true)
+                            if (!usersFollowingUsers.contains(
+                                    snapshot.child(
+                                        Consts.KEY_USER_ID
+                                    ).value
+                                ) || (binding.etSearch.text.toString()
+                                    .isNotEmpty() &&
+                                        !snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
+                                            .contains(
+                                                binding.etSearch.text.toString(),
+                                                ignoreCase = true
+                                            ))
                             ) {
                                 notIncludedPostCount++
-                                if (newPosts.size == (dataSnapshot.childrenCount.toInt()-notIncludedPostCount)) {
-                                    postAdapter.addPosts(newPosts,true)
-
-                                    if (newPosts.size < postsPerPage) {
-                                        isLastPage = true
-                                    }
-
-                                    // Update lastPostId only after processing all posts
-                                    lastPostId = newPosts[newPosts.size - 1].postId
+                                if (newPosts.size == (dataSnapshot.childrenCount.toInt() - notIncludedPostCount)) {
+                                    postAdapter.addPosts(newPosts, true)
 
                                     isLoading = false
+
+                                    if (newPosts.size < postsPerPage) {
+                                        isLastPage = false
+                                        loadMorePosts()
+                                    }
                                 }
                                 return
                             }
 
                             val post = Post()
                             post.postId = postId
-                            post.comments = snapshot.child(Consts.KEY_COMMENTS).value.toString().toInt()
+                            post.comments =
+                                snapshot.child(Consts.KEY_COMMENTS).value.toString()
+                                    .toInt()
                             //  post.likes = snapshot.child(Consts.KEY_LIKES).value.toString().toInt()
-                            post.description = snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
-                            post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
-                            post.timestamp = snapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
-                            post.lat = snapshot.child(Consts.KEY_LATITUDE).value.toString().toDouble()
-                            post.longt = snapshot.child(Consts.KEY_LONGITUDE).value.toString().toDouble()
+                            post.description =
+                                snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
+                            post.userId =
+                                snapshot.child(Consts.KEY_USER_ID).value.toString()
+                            post.timestamp =
+                                snapshot.child(Consts.KEY_TIMESTAMP).value.toString()
+                                    .toLong()
+                            post.lat =
+                                snapshot.child(Consts.KEY_LATITUDE).value.toString()
+                                    .toDouble()
+                            post.longt =
+                                snapshot.child(Consts.KEY_LONGITUDE).value.toString()
+                                    .toDouble()
 
                             // Retrieve photo URLs as a list
                             val photoSlides = ArrayList<CarouselItem>()
@@ -561,38 +567,46 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
 
 
                             //get user details
-                            val userDatabaseReference = firebaseReference.getUsersRef().child(post.userId)
-                            userDatabaseReference.addListenerForSingleValueEvent(object:ValueEventListener{
-                                override fun onDataChange(snapshot: DataSnapshot) {
+                            val userDatabaseReference =
+                                firebaseReference.getUsersRef()
+                                    .child(post.userId)
+                            userDatabaseReference.addListenerForSingleValueEvent(
+                                object :
+                                    ValueEventListener {
+                                    override fun onDataChange(snapshot: DataSnapshot) {
 
-                                    post.postmanName = snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
-                                    post.postmanPhoto = snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
+                                        post.postmanName =
+                                            snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
+                                        post.postmanPhoto =
+                                            snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
 
 
-                                    newPosts.add(post)
+                                        newPosts.add(post)
 
-                                    // Check if all posts have been processed
-                                    if (newPosts.size == (dataSnapshot.childrenCount.toInt()-notIncludedPostCount)) {
-                                        postAdapter.addPosts(newPosts,true)
+                                        // Check if all posts have been processed
+                                        if (newPosts.size == (dataSnapshot.childrenCount.toInt() - notIncludedPostCount)) {
+                                            postAdapter.addPosts(newPosts, true)
 
-                                        if (newPosts.size < postsPerPage) {
-                                            isLastPage = true
+                                            if (newPosts.size < postsPerPage) {
+                                                isLastPage = true
+                                            }
+
+                                            // Update lastPostId only after processing all posts
+                                            lastPostId =
+                                                newPosts[newPosts.size - 1].postId
+
+                                            //  Log.d("shnlog","last post id 2: "+lastPostId)
+
+                                            isLoading = false
                                         }
 
-                                        // Update lastPostId only after processing all posts
-                                        lastPostId = newPosts[newPosts.size - 1].postId
 
-                                        isLoading = false
                                     }
 
+                                    override fun onCancelled(error: DatabaseError) {
 
-
-                                }
-
-                                override fun onCancelled(error: DatabaseError) {
-
-                                }
-                            })
+                                    }
+                                })
 
 
                         }
@@ -613,78 +627,11 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
     }
 
 
-
-    private fun loadMorePosts() {
-        currentPage++
-        getFollowingPosts("","userId1")
-    }/*
     private fun loadMorePosts() {
         // Increment currentPage after loading more posts
-        loadPostIDsOfLocation("")
+        loadPostIDsOfLocation(folowingPostOnlyFlag)
         currentPage++
-    }*/
-
-
-    // Assuming postId is the ID of the post being liked
-    /*fun incrementLikeCount(postId: String) {
-
-        firebaseReference.getPostsRef().child(postId).runTransaction(object : Transaction.Handler {
-            override fun doTransaction(currentData: MutableData): Transaction.Result {
-                val post = currentData.getValue(Post::class.java)
-
-                // Check if the post exists
-                if (post == null) {
-                    // Handle error or return Transaction.success(currentData) if you don't want to create the post
-                    return Transaction.success(currentData)
-                }
-
-                // Increment the likes count
-                post.likes = post.likes + 1
-
-                // Set the updated value
-                currentData.value = post
-
-                return Transaction.success(currentData)
-            }
-
-            override fun onComplete(
-                databaseError: DatabaseError?,
-                committed: Boolean,
-                currentData: DataSnapshot?
-            ) {
-                if (committed) {
-                    // Like count updated successfully
-                } else {
-                    // Transaction failed, handle error
-                    if (databaseError != null) {
-                        // Handle the error, you might want to retry or inform the user
-                    }
-                }
-            }
-        })
-    }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    }
 
 
     class ViewPagerAdapter : FragmentPagerAdapter {
@@ -720,13 +667,12 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
     }
 
     override fun onLikeClick(postId: String, liked: Boolean) {
-     //   incrementLikeCount(postId)
+        //   incrementLikeCount(postId)
 
         if (!liked) {
             firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
                 .child(PrefManager.getUserId()).setValue(true)
-        }
-        else{
+        } else {
             firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
                 .child(PrefManager.getUserId()).removeValue()
         }
@@ -734,7 +680,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener, Post
 
     override fun onProfileClick(userId: String) {
         val intent = Intent(this, UserViewActivity::class.java)
-        intent.putExtra(Consts.KEY_USER_ID,userId)
+        intent.putExtra(Consts.KEY_USER_ID, userId)
         startActivity(intent)
 
     }
