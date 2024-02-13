@@ -1,5 +1,6 @@
-package com.shn.fh
+package com.shn.fh.user
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -64,6 +65,13 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
 
         setupPostsRecyclerView()
 
+        binding.tvFollowersCount.setOnClickListener {
+            var intent=Intent(this, FollowListActivity::class.java)
+            intent.putExtra(Consts.KEY_FOLLOWERS_OR_FOLLOWING,Consts.FLAG_FOLLOWERS)
+            intent.putExtra(Consts.KEY_USER_ID,userId)
+            startActivity(intent)
+        }
+
     }
 
     private fun getUserInfo(userId: String) {
@@ -73,7 +81,7 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
             override fun onDataChange(snapshot: DataSnapshot) {
 
                 userName = snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
-                userPic = snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
+                userPic = snapshot.child(Consts.KEY_PROFILEPIC_URL).value.toString()
                 userBio = snapshot.child(Consts.KEY_USER_BIO).value.toString()
                 val following = snapshot.child(Consts.KEY_FOLLOWERS).child(myUserId).exists()
                 val followerCount = snapshot.child(Consts.KEY_FOLLOWERS).childrenCount

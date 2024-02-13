@@ -5,6 +5,10 @@ object Consts {
     const val TAB_POSTS = 0
     const val TAB_SPOTS = 1
 
+    const val FLAG_FOLLOWERS = 0
+    const val FLAG_FOLLOWING = 1
+    const val KEY_FOLLOWERS_OR_FOLLOWING="follower_or_following"
+
     const val DEBUGGABLE = true
 
 
@@ -20,7 +24,7 @@ object Consts {
     const val KEY_EMAIL = "email"
     const val KEY_DISPLAY_NAME = "displayName"
     const val KEY_USER_BIO = "bio"
-    const val KEY_PHOTO_URL = "profilePicture"
+    const val KEY_PROFILEPIC_URL = "profilePicture"
     const val KEY_LOCATIONS = "locations"
     const val KEY_LOCATION_ID = "location_id"
     const val KEY_POSTS = "posts"

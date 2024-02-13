@@ -95,7 +95,7 @@ class LoginActivity : AppCompatActivity() {
         val intent = Intent(this, AccountSetupActivity::class.java)
         intent.putExtra(Consts.KEY_DISPLAY_NAME,name)
         intent.putExtra(Consts.KEY_EMAIL,email)
-        intent.putExtra(Consts.KEY_PHOTO_URL,photoUrl)
+        intent.putExtra(Consts.KEY_PROFILEPIC_URL,photoUrl)
         intent.putExtra(Consts.KEY_USER_ID,userId)
         startActivity(intent)
         finish()
@@ -199,7 +199,7 @@ class LoginActivity : AppCompatActivity() {
         userDatabaseReference.child(userId).child(Consts.KEY_EMAIL).setValue(account.email)
         userDatabaseReference.child(userId).child(Consts.KEY_DISPLAY_NAME)
             .setValue(account.displayName)
-        userDatabaseReference.child(userId).child(Consts.KEY_PHOTO_URL).setValue(account.photoUrl)
+        userDatabaseReference.child(userId).child(Consts.KEY_PROFILEPIC_URL).setValue(account.photoUrl)
 
     }
 

@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.*
 import com.shn.fh.R
-import com.shn.fh.UserViewActivity
+import com.shn.fh.user.UserViewActivity
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
 import com.shn.fh.posts.models.Location
@@ -430,7 +430,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                                         post.postmanName =
                                             snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
                                         post.postmanPhoto =
-                                            snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
+                                            snapshot.child(Consts.KEY_PROFILEPIC_URL).value.toString()
 
 
                                         newPosts.add(post)
@@ -579,7 +579,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                                         post.postmanName =
                                             snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
                                         post.postmanPhoto =
-                                            snapshot.child(Consts.KEY_PHOTO_URL).value.toString()
+                                            snapshot.child(Consts.KEY_PROFILEPIC_URL).value.toString()
 
 
                                         newPosts.add(post)
