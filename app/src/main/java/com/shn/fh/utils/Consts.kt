@@ -34,6 +34,7 @@ object Consts {
     const val KEY_LIKES = "likes"
     const val KEY_LIKED_USERS = "liked_users"
     const val KEY_USERS = "users"
+    const val KEY_NOTIFICATIONS = "notifications"
     const val KEY_DESCRIPTION = "description"
     const val KEY_PHOTO_URLS = "photoURLs"
     const val KEY_FOLLOWERS = "followers"

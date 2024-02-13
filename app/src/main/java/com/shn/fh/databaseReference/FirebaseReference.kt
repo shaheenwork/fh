@@ -27,5 +27,8 @@ class FirebaseReference {
     fun getUsersRef(): DatabaseReference {
         return getRootReference().child(Consts.KEY_USERS)
     }
+    fun getNotifications(): DatabaseReference {
+        return getRootReference().child(Consts.KEY_NOTIFICATIONS)
+    }
 
 }

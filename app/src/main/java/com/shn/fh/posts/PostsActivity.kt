@@ -61,6 +61,8 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        PrefManager.getInstance(this)
+
         userId = PrefManager.getUserId()
         usersFollowingUsers = ArrayList()
 
@@ -315,10 +317,9 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
             }
             else {
 
-
                 val database = firebaseReference.getUsersRef()
 
-                val followingRef = database.child("userId1").child(Consts.KEY_FOLLOWING)
+                val followingRef = database.child(PrefManager.getUserId()).child(Consts.KEY_FOLLOWING)
 
                 followingRef.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
