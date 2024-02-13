@@ -169,7 +169,7 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
     private fun loadPostIDsOfLocation(searchTerm: String) {
         if (isLoading || isLastPage) {
             return
-        }
+        } 
 
         isLoading = true
         val databaseReference =
