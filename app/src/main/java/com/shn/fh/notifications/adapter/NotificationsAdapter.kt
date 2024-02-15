@@ -1,8 +1,6 @@
-package com.shn.fh.user.adapter
+package com.shn.fh.notifications.adapter
 
 // PostAdapter.kt
-import android.app.Activity
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,19 +9,16 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.shn.fh.R
-import com.shn.fh.user.UserViewActivity
-import com.shn.fh.user.model.User
-import com.shn.fh.utils.Consts
+import com.shn.fh.notifications.model.Notification
+import com.shn.fh.utils.Utils
 
 
 // PostAdapter.kt
-class UsersAdapter(
+class NotificationsAdapter(
     private val context: android.content.Context,
     private val userId: String,
-    private val usersList: List<User>
-) : RecyclerView.Adapter<UsersAdapter.PostViewHolder>() {
-
-    private val users: List<User> = usersList
+    private val notifList: List<Notification>
+) : RecyclerView.Adapter<NotificationsAdapter.PostViewHolder>() {
 
 
     interface OnProfileClickListener {
@@ -43,18 +38,21 @@ class UsersAdapter(
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        val user = users[position]
-        holder.userName.text = user.userName
+        val notification = notifList[position]
+
+
+        holder.userName.text =
+            "${notification.user.userName} ${Utils.getActionForNotification(notification.action)}"
 
         Glide.with(context)
-            .load(user.userPic)
+            .load(notification.user.userPic)
             .into(holder.profilePic)
 
 
         holder.itemView.setOnClickListener {
-            val intent = Intent(context, UserViewActivity::class.java)
-            intent.putExtra(Consts.KEY_USER_ID, user.userId)
-            (context as Activity).startActivity(intent)
+            /*val intent = Intent(context, UserViewActivity::class.java)
+            intent.putExtra(Consts.KEY_USER_ID, notification.userId)
+            (context as Activity).startActivity(intent)*/
 
         }
 
@@ -90,7 +88,7 @@ class UsersAdapter(
     }
 
     override fun getItemCount(): Int {
-        return users.size
+        return notifList.size
     }
 
 

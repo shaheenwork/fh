@@ -9,6 +9,12 @@ object Consts {
     const val FLAG_FOLLOWING = 1
     const val KEY_FOLLOWERS_OR_FOLLOWING="follower_or_following"
 
+
+    const val ACTION_LIKE = 0
+    const val ACTION_FOLLOW = 1
+    const val ACTION_COMMENT = 2
+
+
     const val DEBUGGABLE = true
 
 
@@ -43,4 +49,6 @@ object Consts {
     const val KEY_PHOTO_URLS = "photoURLs"
     const val KEY_FOLLOWERS = "followers"
     const val KEY_FOLLOWING = "following"
+    const val KEY_READ_STATUS = "readStatus"
+    const val KEY_ACTION_NOTIFICATION = "action_notification"
 }

@@ -75,6 +75,21 @@ class Utils {
 
             return  cityName;
         }
+        fun getActionForNotification(act:Int):String{
+            var action:String=""
+            when (act) {
+                Consts.ACTION_LIKE -> {
+                    action = "liked your post"
+                }
+                Consts.ACTION_COMMENT -> {
+                    action="commented on your post"
+                }
+                Consts.ACTION_FOLLOW -> {
+                    action = "followed you"
+                }
+            }
+            return  action
+        }
 
 
 

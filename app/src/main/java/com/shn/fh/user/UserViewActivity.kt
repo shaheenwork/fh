@@ -62,11 +62,10 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
         getUserInfo(userId)
 
 
-
         setupPostsRecyclerView()
 
         binding.tvFollowersCount.setOnClickListener {
-            var intent=Intent(this, FollowListActivity::class.java)
+            val intent=Intent(this, FollowListActivity::class.java)
             intent.putExtra(Consts.KEY_FOLLOWERS_OR_FOLLOWING,Consts.FLAG_FOLLOWERS)
             intent.putExtra(Consts.KEY_USER_ID,userId)
             startActivity(intent)
@@ -169,7 +168,7 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
     private fun loadPostIDsOfLocation(searchTerm: String) {
         if (isLoading || isLastPage) {
             return
-        } 
+        }
 
         isLoading = true
         val databaseReference =

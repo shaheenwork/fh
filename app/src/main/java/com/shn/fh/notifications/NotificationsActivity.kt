@@ -1,4 +1,4 @@
-package com.shn.fh.user
+package com.shn.fh.notifications
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -8,53 +8,52 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.shn.fh.databaseReference.FirebaseReference
-import com.shn.fh.databinding.ActivityFollowListBinding
+import com.shn.fh.databinding.ActivityNotificationsBinding
+import com.shn.fh.notifications.model.Notification
 import com.shn.fh.notifications.adapter.NotificationsAdapter
-import com.shn.fh.user.adapter.UsersAdapter
 import com.shn.fh.user.model.User
 import com.shn.fh.utils.Consts
 
-class FollowListActivity : AppCompatActivity() {
+class NotificationsActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityNotificationsBinding
     private var userId: String? = null
-    private var followOrFollowing = Consts.FLAG_FOLLOWING
     private lateinit var firebaseReference: FirebaseReference
-
-    private lateinit var adapter: UsersAdapter
+    private lateinit var adapter: NotificationsAdapter
     private lateinit var recyclerView: RecyclerView
-    private lateinit var binding:ActivityFollowListBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityFollowListBinding.inflate(layoutInflater)
+        binding = ActivityNotificationsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        userId = intent.getStringExtra(Consts.KEY_USER_ID)
-        followOrFollowing = intent.getIntExtra(Consts.KEY_FOLLOWERS_OR_FOLLOWING,Consts.FLAG_FOLLOWING)
-
+        userId = "userId1"
+       // userId = intent.getStringExtra(Consts.KEY_USER_ID)
         firebaseReference = FirebaseReference()
 
-        getList()
 
 
-
+        getNotifications()
     }
 
-    private fun getList() {
-        var databaseRef  = firebaseReference.getUsersRef().child(userId!!)
+    private fun getNotifications() {
+        var databaseRef  = firebaseReference.getNotifications().child(userId!!).orderByChild(Consts.KEY_TIMESTAMP)
         databaseRef.addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(mainSnapshot: DataSnapshot) {
-                var list:ArrayList<User> = ArrayList()
-
-                val child:String = if (followOrFollowing==Consts.FLAG_FOLLOWING){
-                    Consts.KEY_FOLLOWING
-                } else{
-                    Consts.KEY_FOLLOWERS
-                }
-
-                for (userSnap in mainSnapshot.child(child).children) {
+                var list:ArrayList<Notification> = ArrayList()
 
 
-                    var userID: String = userSnap.key.toString()
+                for (dataSnapshot in mainSnapshot.children) {
+
+
+                    val userID: String = dataSnapshot.child(Consts.KEY_USER_ID).value.toString()
+                    val timestamp: Long = dataSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
+                    val action: Int = dataSnapshot.child(Consts.KEY_ACTION_NOTIFICATION).value.toString().toInt()
+                    val readStatus: Int = dataSnapshot.child(Consts.KEY_READ_STATUS).value.toString().toInt()
+                    var postId: String=""
+                    if (action!=Consts.ACTION_FOLLOW) {
+                         postId = dataSnapshot.child(Consts.KEY_POST_ID).value.toString()
+                    }
 
                     //get userDetails
                     var userDatabaseRef = firebaseReference.getUsersRef().child(userID)
@@ -66,14 +65,16 @@ class FollowListActivity : AppCompatActivity() {
                                 userID,
                                 snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString(),
                                 snapshot.child(Consts.KEY_PROFILEPIC_URL).value.toString(),
-                                snapshot.child(Consts.KEY_USER_BIO).value.toString(),
-                                snapshot.child(Consts.KEY_FOLLOWERS).childrenCount.toInt(),
-                                snapshot.child(Consts.KEY_FOLLOWING).childrenCount.toInt(),
+                                "snapshot.child(Consts.KEY_USER_BIO).value.toString()",
+                                0,
+                                0,
                             )
 
-                            list.add(user)
+                            val notification = Notification(timestamp,action,user, postId,readStatus)
 
-                            if (list.size == mainSnapshot.child(Consts.KEY_FOLLOWERS).childrenCount.toInt()) {
+                            list.add(notification)
+
+                            if (list.size == mainSnapshot.childrenCount.toInt()) {
 
                                 setupRecyclerView(list)
 
@@ -99,13 +100,11 @@ class FollowListActivity : AppCompatActivity() {
 
             }
         })
-
     }
 
-
-    private fun setupRecyclerView(list: List<User>) {
-        recyclerView = binding.rvUsers
-        adapter = UsersAdapter(this, userId!!, list)
+    private fun setupRecyclerView(list: List<Notification>) {
+        recyclerView = binding.rvNotif
+        adapter = NotificationsAdapter(this, userId!!, list)
 
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
@@ -130,5 +129,4 @@ class FollowListActivity : AppCompatActivity() {
             }
         })*/
     }
-
 }
