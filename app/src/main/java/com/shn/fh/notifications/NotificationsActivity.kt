@@ -31,7 +31,6 @@ class NotificationsActivity : AppCompatActivity() {
         firebaseReference = FirebaseReference()
 
 
-
         getNotifications()
     }
 
@@ -45,18 +44,17 @@ class NotificationsActivity : AppCompatActivity() {
 
                 for (dataSnapshot in mainSnapshot.children) {
 
-
                     val userID: String = dataSnapshot.child(Consts.KEY_USER_ID).value.toString()
                     val timestamp: Long = dataSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
                     val action: Int = dataSnapshot.child(Consts.KEY_ACTION_NOTIFICATION).value.toString().toInt()
                     val readStatus: Int = dataSnapshot.child(Consts.KEY_READ_STATUS).value.toString().toInt()
-                    var postId: String=""
+                    var postId =""
                     if (action!=Consts.ACTION_FOLLOW) {
                          postId = dataSnapshot.child(Consts.KEY_POST_ID).value.toString()
                     }
 
                     //get userDetails
-                    var userDatabaseRef = firebaseReference.getUsersRef().child(userID)
+                    val userDatabaseRef = firebaseReference.getUsersRef().child(userID)
 
                     userDatabaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
@@ -70,7 +68,7 @@ class NotificationsActivity : AppCompatActivity() {
                                 0,
                             )
 
-                            val notification = Notification(timestamp,action,user, postId,readStatus)
+                            val notification = Notification(timestamp,action,user,postId,readStatus)
 
                             list.add(notification)
 
@@ -90,8 +88,6 @@ class NotificationsActivity : AppCompatActivity() {
                     })
 
                 }
-
-
 
 
             }

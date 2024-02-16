@@ -1,6 +1,8 @@
 package com.shn.fh.notifications.adapter
 
 // PostAdapter.kt
+import android.app.Activity
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.shn.fh.R
 import com.shn.fh.notifications.model.Notification
+import com.shn.fh.posts.PostViewActivity
+import com.shn.fh.user.UserViewActivity
+import com.shn.fh.utils.Consts
 import com.shn.fh.utils.Utils
 
 
@@ -50,9 +55,17 @@ class NotificationsAdapter(
 
 
         holder.itemView.setOnClickListener {
-            /*val intent = Intent(context, UserViewActivity::class.java)
-            intent.putExtra(Consts.KEY_USER_ID, notification.userId)
-            (context as Activity).startActivity(intent)*/
+
+            if (notification.action==Consts.ACTION_COMMENT || notification.action==Consts.ACTION_LIKE) {
+                val intent = Intent(context, PostViewActivity::class.java)
+                intent.putExtra(Consts.KEY_POST_ID, notification.postId)
+                (context as Activity).startActivity(intent)
+            }
+            else{
+                val intent = Intent(context, UserViewActivity::class.java)
+                intent.putExtra(Consts.KEY_USER_ID, notification.user.userId)
+                (context as Activity).startActivity(intent)
+            }
 
         }
 

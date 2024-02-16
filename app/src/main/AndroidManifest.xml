@@ -15,6 +15,9 @@
         android:theme="@style/Theme.FH"
         tools:targetApi="31">
         <activity
+            android:name=".posts.PostViewActivity"
+            android:exported="false" />
+        <activity
             android:name=".notifications.NotificationsActivity"
             android:exported="false" />
         <activity
