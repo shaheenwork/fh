@@ -2,6 +2,7 @@ package com.shn.fh.utils
 
 object Consts {
 
+
     const val TAB_POSTS = 0
     const val TAB_SPOTS = 1
 
@@ -13,6 +14,10 @@ object Consts {
     const val ACTION_LIKE = 0
     const val ACTION_FOLLOW = 1
     const val ACTION_COMMENT = 2
+
+    //sort order
+    const val SORT_TIME = 0
+    const val SORT_POPULARITY = 1
 
 
     const val DEBUGGABLE = true
@@ -48,6 +53,7 @@ object Consts {
     const val KEY_DESCRIPTION = "description"
     const val KEY_PHOTO_URLS = "photoURLs"
     const val KEY_FOLLOWERS = "followers"
+    const val KEY_POPULARITY= "popularity"
     const val KEY_FOLLOWING = "following"
     const val KEY_READ_STATUS = "readStatus"
     const val KEY_ACTION_NOTIFICATION = "action_notification"

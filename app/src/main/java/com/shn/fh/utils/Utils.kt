@@ -95,7 +95,7 @@ class Utils {
 
         fun getTimeAgo(timestamp: Long): String {
             val currentTime = System.currentTimeMillis()
-            val timeDifference = currentTime - timestamp
+            val timeDifference = currentTime - (-timestamp)
 
             val secondsInMilli: Long = 1000
             val minutesInMilli = secondsInMilli * 60

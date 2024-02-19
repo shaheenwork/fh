@@ -48,12 +48,15 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
     private var isLoading = false
     private var isLastPage = false
     private var lastPostId: String? = null
+    private var lastPostPopularity: Double = 0.0
+    private var lastPostTimestamp: Double = 0.0
 
     private val postsPerPage = 3
     private var currentPage = 1
     private lateinit var selectedLocation: String
 
     private var folowingPostOnlyFlag: Boolean = false
+    private var sortOrder: Int = Consts.SORT_TIME
     private lateinit var usersFollowingUsers:List<String?>
 
 
@@ -274,7 +277,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
         databaseReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (place in snapshot.children) {
-                    locationsList.add(place.getValue(Location::class.java)!!)
+                    locationsList.add(Location(place.key.toString()))
                 }
                 setupPostsRecyclerView()
                 setupLocationSpinner()
@@ -348,11 +351,34 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
             val databaseReference = firebaseReference.getLocationsRef().child(selectedLocation)
                 .child(Consts.KEY_POSTS)
             // Modify the query based on whether lastPostId is empty
-            val query = if (lastPostId != null && lastPostId!!.isNotEmpty()) {
-                databaseReference.orderByKey().startAfter(lastPostId).limitToFirst(postsPerPage)
-            } else {
-                databaseReference.limitToFirst(postsPerPage)
+
+            var query:Query
+            when (sortOrder) {
+                Consts.SORT_POPULARITY -> {
+                    query = if (lastPostId != null && lastPostId!!.isNotEmpty()) {
+                        databaseReference.orderByChild(Consts.KEY_POPULARITY).startAfter(lastPostPopularity).limitToFirst(postsPerPage)
+                    } else {
+                        databaseReference.orderByChild(Consts.KEY_POPULARITY).limitToFirst(postsPerPage)
+                    }
+                }
+                Consts.SORT_TIME -> {
+                    query = if (lastPostId != null && lastPostId!!.isNotEmpty()) {
+                        databaseReference.orderByChild(Consts.KEY_TIMESTAMP).startAfter(lastPostTimestamp).limitToFirst(postsPerPage)
+                    } else {
+                        databaseReference.orderByChild(Consts.KEY_TIMESTAMP).limitToFirst(postsPerPage)
+                    }
+                }
+                else -> {
+                    //default - popularity
+
+                    query = if (lastPostId != null && lastPostId!!.isNotEmpty()) {
+                        databaseReference.orderByChild(Consts.KEY_POPULARITY).startAfter(lastPostPopularity).limitToFirst(postsPerPage)
+                    } else {
+                        databaseReference.orderByChild(Consts.KEY_POPULARITY).limitToFirst(postsPerPage)
+                    }
+                }
             }
+
 
             query.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -363,6 +389,8 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                         val postId = postSnapshot.key.toString()
 
                         lastPostId = postId
+                        lastPostPopularity = postSnapshot.child(Consts.KEY_POPULARITY).value.toString().toDouble()
+                        lastPostTimestamp = postSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toDouble()
                         Log.d("shnlog", "last post id 1: " + lastPostId)
 
                         // Load post content
