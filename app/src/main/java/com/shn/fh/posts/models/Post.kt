@@ -4,6 +4,7 @@ import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 data class Post(
     var postId: String = "",
+    var locationId: String = "",
     var userId: String = "",
     var postmanName: String = "",
     var postmanPhoto: String = "",

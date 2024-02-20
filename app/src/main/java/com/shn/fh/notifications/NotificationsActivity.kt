@@ -49,8 +49,10 @@ class NotificationsActivity : AppCompatActivity() {
                     val action: Int = dataSnapshot.child(Consts.KEY_ACTION_NOTIFICATION).value.toString().toInt()
                     val readStatus: Int = dataSnapshot.child(Consts.KEY_READ_STATUS).value.toString().toInt()
                     var postId =""
+                    var locationId =""
                     if (action!=Consts.ACTION_FOLLOW) {
                          postId = dataSnapshot.child(Consts.KEY_POST_ID).value.toString()
+                         locationId = dataSnapshot.child(Consts.KEY_LOCATION_ID).value.toString()
                     }
 
                     //get userDetails
@@ -68,7 +70,7 @@ class NotificationsActivity : AppCompatActivity() {
                                 0,
                             )
 
-                            val notification = Notification(timestamp,action,user,postId,readStatus)
+                            val notification = Notification(timestamp,action,user,postId,locationId,readStatus)
 
                             list.add(notification)
 

@@ -222,8 +222,9 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                             post.description =
                                 snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
                             post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
+                            post.locationId = snapshot.child(Consts.KEY_LOCATION_ID).value.toString()
                             post.timestamp =
-                                snapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
+                                snapshot.child(Consts.KEY_TIMESTAMP).value.toString().trim().toLong()
                             post.lat =
                                 snapshot.child(Consts.KEY_LATITUDE).value.toString().toDouble()
                             post.longt =
@@ -266,6 +267,7 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                             }
 
 
+
                         }
 
                         override fun onCancelled(error: DatabaseError) {
@@ -283,19 +285,37 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
         })
     }
 
-    override fun onLikeClick(postId: String, liked: Boolean) {
+    override fun onLikeClick(locationId:String, postId: String, liked: Boolean) {
         //   incrementLikeCount(postId)
 
-        if (!liked) {
-            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
-                .child(PrefManager.getUserId()).setValue(true)
-        } else {
-            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
-                .child(PrefManager.getUserId()).removeValue()
-        }
+        firebaseReference.getLocationsRef().child(locationId!!).child(Consts.KEY_POSTS)
+            .child(postId!!).child(Consts.KEY_POPULARITY)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val pop_score = snapshot.value.toString().toDouble()
+
+                    if (!liked) {
+                        firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
+                            .child(PrefManager.getUserId()).setValue(true)
+                        firebaseReference.getLocationsRef().child(locationId)
+                            .child(Consts.KEY_POSTS).child(postId).child(Consts.KEY_POPULARITY)
+                            .setValue(pop_score + Consts.SCORE_LIKE)
+                    } else {
+                        firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
+                            .child(PrefManager.getUserId()).removeValue()
+                        firebaseReference.getLocationsRef().child(locationId)
+                            .child(Consts.KEY_POSTS).child(postId).child(Consts.KEY_POPULARITY)
+                            .setValue(pop_score - Consts.SCORE_LIKE)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
     }
 
-    override fun onProfileClick(userId: String) {
+                override fun onProfileClick(userId: String) {
 
     }
 

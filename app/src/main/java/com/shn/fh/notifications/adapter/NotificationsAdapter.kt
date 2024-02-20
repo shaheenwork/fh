@@ -59,6 +59,7 @@ class NotificationsAdapter(
             if (notification.action==Consts.ACTION_COMMENT || notification.action==Consts.ACTION_LIKE) {
                 val intent = Intent(context, PostViewActivity::class.java)
                 intent.putExtra(Consts.KEY_POST_ID, notification.postId)
+                intent.putExtra(Consts.KEY_LOCATION_ID, notification.locationId)
                 (context as Activity).startActivity(intent)
             }
             else{

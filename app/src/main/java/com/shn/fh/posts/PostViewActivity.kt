@@ -26,13 +26,17 @@ import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 class PostViewActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPostViewBinding
     private var postId: String? = null
+    private var locationId: String? = null
     private lateinit var firebaseReference: FirebaseReference
+    val PAYLOAD_LIKE = "PAYLOAD_LIKE"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPostViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        PrefManager.getInstance(this)
         postId = intent.getStringExtra(Consts.KEY_POST_ID)
+        locationId = intent.getStringExtra(Consts.KEY_LOCATION_ID)
         firebaseReference = FirebaseReference()
 
         getPost()
@@ -182,21 +186,65 @@ class PostViewActivity : AppCompatActivity() {
         }
         BTN_Like.setOnClickListener {
             val liked = post.liked_users.contains(PrefManager.getUserId())
-            if (liked) {
-                val new = post.liked_users.toMutableList()
-                new.remove(PrefManager.getUserId())
-                post.liked_users = new
-            } else {
-                val new = post.liked_users.toMutableList()
-                new.add(PrefManager.getUserId())
-                post.liked_users = new
-            }
-          //  notifyItemChanged(position,PAYLOAD_LIKE)
-           // likeListener.onLikeClick(post.postId, liked)
+
+            firebaseReference.getLocationsRef().child(locationId!!).child(Consts.KEY_POSTS)
+                .child(postId!!).child(Consts.KEY_POPULARITY).addListenerForSingleValueEvent(object :ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val pop_score = snapshot.value.toString().toDouble()
+
+                        if (liked) {
+                            val new = post.liked_users.toMutableList()
+                            new.remove(PrefManager.getUserId())
+                            post.liked_users = new
+
+                            firebaseReference.getPostsRef().child(postId!!)
+                                .child(Consts.KEY_LIKED_USERS)
+                                .child(PrefManager.getUserId()).removeValue()
+
+                            firebaseReference.getLocationsRef().child(locationId!!)
+                                .child(Consts.KEY_POSTS)
+                                .child(postId!!).child(Consts.KEY_POPULARITY)
+                                .setValue(pop_score - Consts.SCORE_LIKE)
+
+                        } else {
+                            val new = post.liked_users.toMutableList()
+                            new.add(PrefManager.getUserId())
+                            post.liked_users = new
+
+                            firebaseReference.getPostsRef().child(postId!!)
+                                .child(Consts.KEY_LIKED_USERS)
+                                .child(PrefManager.getUserId()).setValue(true)
+
+                            firebaseReference.getLocationsRef().child(locationId!!)
+                                .child(Consts.KEY_POSTS)
+                                .child(postId!!).child(Consts.KEY_POPULARITY)
+                                .setValue(pop_score + Consts.SCORE_LIKE)
+
+                        }
+
+                        //update ui
+                        if (post.liked_users.contains(PrefManager.getUserId())) {
+                            likeIcon.setColorFilter(
+                                ContextCompat.getColor(
+                                    this@PostViewActivity,
+                                    R.color.purple_500
+                                )
+                            );
+                        } else {
+                            likeIcon.setColorFilter(ContextCompat.getColor(this@PostViewActivity, R.color.black));
+                        }
+                        likeCountTextView.text = (post.liked_users.size).toString() + " likes"
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        TODO("Not yet implemented")
+                    }
+                })
+
         }
 
         profilePic.setOnClickListener {
-           // profileClickListener.onProfileClick(post.userId)
+            // profileClickListener.onProfileClick(post.userId)
         }
     }
 }

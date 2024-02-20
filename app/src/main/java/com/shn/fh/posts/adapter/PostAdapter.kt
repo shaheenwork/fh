@@ -33,7 +33,7 @@ class PostAdapter(
     val PAYLOAD_LIKE = "PAYLOAD_LIKE"
 
     interface OnLikeClickListener {
-        fun onLikeClick(postId: String, liked: Boolean)
+        fun onLikeClick(locationId: String, postId: String, liked: Boolean)
     }
 
     interface OnProfileClickListener {
@@ -129,7 +129,7 @@ class PostAdapter(
                 posts[position].liked_users = new
             }
             notifyItemChanged(position,PAYLOAD_LIKE)
-            likeListener.onLikeClick(posts[position].postId, liked)
+            likeListener.onLikeClick(posts[position].locationId, posts[position].postId, liked)
         }
 
         holder.profilePic.setOnClickListener {

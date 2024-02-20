@@ -8,7 +8,7 @@ object Consts {
 
     const val FLAG_FOLLOWERS = 0
     const val FLAG_FOLLOWING = 1
-    const val KEY_FOLLOWERS_OR_FOLLOWING="follower_or_following"
+    const val KEY_FOLLOWERS_OR_FOLLOWING = "follower_or_following"
 
 
     const val ACTION_LIKE = 0
@@ -19,6 +19,9 @@ object Consts {
     const val SORT_TIME = 0
     const val SORT_POPULARITY = 1
 
+    const val SCORE_LIKE = -1
+    const val SCORE_COMMENT = -2
+
 
     const val DEBUGGABLE = true
 
@@ -26,9 +29,6 @@ object Consts {
     //keys
     const val KEY_POST_ID = "postID"
     const val KEY_LOCATION = "location"
-
-
-
 
 
     //firebase keys
@@ -53,7 +53,7 @@ object Consts {
     const val KEY_DESCRIPTION = "description"
     const val KEY_PHOTO_URLS = "photoURLs"
     const val KEY_FOLLOWERS = "followers"
-    const val KEY_POPULARITY= "popularity"
+    const val KEY_POPULARITY = "popularity"
     const val KEY_FOLLOWING = "following"
     const val KEY_READ_STATUS = "readStatus"
     const val KEY_ACTION_NOTIFICATION = "action_notification"

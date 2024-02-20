@@ -57,7 +57,7 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
 
     private var folowingPostOnlyFlag: Boolean = false
     private var sortOrder: Int = Consts.SORT_TIME
-    private lateinit var usersFollowingUsers:List<String?>
+    private lateinit var usersFollowingUsers: List<String?>
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -318,17 +318,17 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
 
         if (followingPostsOnly) {
 
-            if (usersFollowingUsers.isNotEmpty()){
+            if (usersFollowingUsers.isNotEmpty()) {
                 //we already have list of users this user follows
 
                 getPostsFromFollowingUsers()
 
-            }
-            else {
+            } else {
 
                 val database = firebaseReference.getUsersRef()
 
-                val followingRef = database.child(PrefManager.getUserId()).child(Consts.KEY_FOLLOWING)
+                val followingRef =
+                    database.child(PrefManager.getUserId()).child(Consts.KEY_FOLLOWING)
 
                 followingRef.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
@@ -352,29 +352,35 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                 .child(Consts.KEY_POSTS)
             // Modify the query based on whether lastPostId is empty
 
-            var query:Query
+            var query: Query
             when (sortOrder) {
                 Consts.SORT_POPULARITY -> {
                     query = if (lastPostId != null && lastPostId!!.isNotEmpty()) {
-                        databaseReference.orderByChild(Consts.KEY_POPULARITY).startAfter(lastPostPopularity).limitToFirst(postsPerPage)
+                        databaseReference.orderByChild(Consts.KEY_POPULARITY)
+                            .startAfter(lastPostPopularity).limitToFirst(postsPerPage)
                     } else {
-                        databaseReference.orderByChild(Consts.KEY_POPULARITY).limitToFirst(postsPerPage)
+                        databaseReference.orderByChild(Consts.KEY_POPULARITY)
+                            .limitToFirst(postsPerPage)
                     }
                 }
                 Consts.SORT_TIME -> {
                     query = if (lastPostId != null && lastPostId!!.isNotEmpty()) {
-                        databaseReference.orderByChild(Consts.KEY_TIMESTAMP).startAfter(lastPostTimestamp).limitToFirst(postsPerPage)
+                        databaseReference.orderByChild(Consts.KEY_TIMESTAMP)
+                            .startAfter(lastPostTimestamp).limitToFirst(postsPerPage)
                     } else {
-                        databaseReference.orderByChild(Consts.KEY_TIMESTAMP).limitToFirst(postsPerPage)
+                        databaseReference.orderByChild(Consts.KEY_TIMESTAMP)
+                            .limitToFirst(postsPerPage)
                     }
                 }
                 else -> {
                     //default - popularity
 
                     query = if (lastPostId != null && lastPostId!!.isNotEmpty()) {
-                        databaseReference.orderByChild(Consts.KEY_POPULARITY).startAfter(lastPostPopularity).limitToFirst(postsPerPage)
+                        databaseReference.orderByChild(Consts.KEY_POPULARITY)
+                            .startAfter(lastPostPopularity).limitToFirst(postsPerPage)
                     } else {
-                        databaseReference.orderByChild(Consts.KEY_POPULARITY).limitToFirst(postsPerPage)
+                        databaseReference.orderByChild(Consts.KEY_POPULARITY)
+                            .limitToFirst(postsPerPage)
                     }
                 }
             }
@@ -389,8 +395,10 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                         val postId = postSnapshot.key.toString()
 
                         lastPostId = postId
-                        lastPostPopularity = postSnapshot.child(Consts.KEY_POPULARITY).value.toString().toDouble()
-                        lastPostTimestamp = postSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toDouble()
+                        lastPostPopularity =
+                            postSnapshot.child(Consts.KEY_POPULARITY).value.toString().toDouble()
+                        lastPostTimestamp =
+                            postSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toDouble()
                         Log.d("shnlog", "last post id 1: " + lastPostId)
 
                         // Load post content
@@ -412,8 +420,8 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
 
                                         isLoading = false
 
-                                        if (newPosts.size<postsPerPage){
-                                            isLastPage=false
+                                        if (newPosts.size < postsPerPage) {
+                                            isLastPage = false
                                             loadMorePosts()
                                         }
                                     }
@@ -427,6 +435,8 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                                 //  post.likes = snapshot.child(Consts.KEY_LIKES).value.toString().toInt()
                                 post.description =
                                     snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
+                                post.locationId =
+                                    snapshot.child(Consts.KEY_LOCATION_ID).value.toString()
                                 post.userId = snapshot.child(Consts.KEY_USER_ID).value.toString()
                                 post.timestamp =
                                     snapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
@@ -572,6 +582,8 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                                 snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
                             post.userId =
                                 snapshot.child(Consts.KEY_USER_ID).value.toString()
+                            post.locationId =
+                                snapshot.child(Consts.KEY_LOCATION_ID).value.toString()
                             post.timestamp =
                                 snapshot.child(Consts.KEY_TIMESTAMP).value.toString()
                                     .toLong()
@@ -701,16 +713,37 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
         }
     }
 
-    override fun onLikeClick(postId: String, liked: Boolean) {
+    override fun onLikeClick(locationId: String, postId: String, liked: Boolean) {
         //   incrementLikeCount(postId)
+        // update popularity score
 
-        if (!liked) {
-            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
-                .child(PrefManager.getUserId()).setValue(true)
-        } else {
-            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
-                .child(PrefManager.getUserId()).removeValue()
-        }
+            firebaseReference.getLocationsRef().child(locationId!!).child(Consts.KEY_POSTS)
+                .child(postId!!).child(Consts.KEY_POPULARITY).addListenerForSingleValueEvent(object :ValueEventListener{
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val pop_score = snapshot.value.toString().toDouble()
+                        if (!liked) {
+                            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
+                                .child(PrefManager.getUserId()).setValue(true)
+
+                            firebaseReference.getLocationsRef().child(locationId).child(Consts.KEY_POSTS)
+                                .child(postId).child(Consts.KEY_POPULARITY).setValue(pop_score + Consts.SCORE_LIKE)
+                        } else {
+                            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
+                                .child(PrefManager.getUserId()).removeValue()
+
+                            firebaseReference.getLocationsRef().child(locationId).child(Consts.KEY_POSTS)
+                                .child(postId).child(Consts.KEY_POPULARITY).setValue(pop_score - Consts.SCORE_LIKE)
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+
+                    }
+
+                })
+
+
+
     }
 
     override fun onProfileClick(userId: String) {
