@@ -12,9 +12,8 @@ import com.shn.fh.posts.models.Comment
 import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
-import com.shn.fh.utils.Utils
 
-class CommentsActivity : AppCompatActivity() {
+class CommentsActivity : AppCompatActivity(),CommentsAdapter.onLongClickListener {
     lateinit var postID: String
     lateinit var locationId: String
     private var isLoading = false
@@ -163,6 +162,8 @@ class CommentsActivity : AppCompatActivity() {
                     val comment = Comment()
                     comment.commentId =
                         commentsSnapshot.child(Consts.KEY_COMMENT_ID).value.toString()
+                    comment.postId = postID
+                    comment.locationId=locationId
                     comment.userId = commentsSnapshot.child(Consts.KEY_USER_ID).value.toString()
                     comment.text = commentsSnapshot.child(Consts.KEY_TEXT).value.toString()
                     comment.timestamp =
@@ -204,7 +205,7 @@ class CommentsActivity : AppCompatActivity() {
 
     private fun setupPostsRecyclerView() {
 
-        adapter = CommentsAdapter()
+        adapter = CommentsAdapter(this)
 
         val layoutManager = LinearLayoutManager(this)
         binding.rvComments.layoutManager = layoutManager
@@ -228,6 +229,35 @@ class CommentsActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    override fun onLongClick(locationId: String, postId: String, commentId: String) {
+
+        //delete comment
+        firebaseReference.getCommentsRef(postId).child(commentId).removeValue()
+
+        //update popularity score
+        firebaseReference.getLocationsRef().child(locationId).child(Consts.KEY_POSTS)
+            .child(postID).child(Consts.KEY_POPULARITY)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val pop_score = snapshot.value.toString().toDouble()
+
+                    firebaseReference.getPostsRef().child(postID).child(Consts.KEY_LIKED_USERS)
+                        .child(PrefManager.getUserId()).removeValue()
+
+                    firebaseReference.getLocationsRef().child(locationId).child(Consts.KEY_POSTS)
+                        .child(postID).child(Consts.KEY_POPULARITY)
+                        .setValue(pop_score - Consts.SCORE_COMMENT)
+
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+
+            })
+
     }
 
 }

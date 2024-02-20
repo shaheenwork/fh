@@ -11,12 +11,16 @@ import com.shn.fh.posts.models.Comment
 
 
 // PostAdapter.kt
-class CommentsAdapter : RecyclerView.Adapter<CommentsAdapter.CommentViewHolder>() {
+class CommentsAdapter(private val longClickListener: onLongClickListener) : RecyclerView.Adapter<CommentsAdapter.CommentViewHolder>() {
 
     private val comments: MutableList<Comment> = mutableListOf()
 
     inner class CommentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val postIdTextView: TextView = itemView.findViewById(R.id.textPost)
+    }
+
+    interface onLongClickListener {
+        fun onLongClick(locationId: String, postId: String, commentId: String)
     }
 
     fun clearComments() {
@@ -31,6 +35,13 @@ class CommentsAdapter : RecyclerView.Adapter<CommentsAdapter.CommentViewHolder>(
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
         holder.postIdTextView.text = comment.text
+
+       holder.itemView.setOnLongClickListener {
+
+           longClickListener.onLongClick(comment.locationId,comment.postId,comment.commentId)
+
+           return@setOnLongClickListener true
+       }
 
     }
 
