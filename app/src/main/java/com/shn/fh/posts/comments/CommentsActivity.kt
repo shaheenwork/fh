@@ -16,6 +16,7 @@ import com.shn.fh.utils.Utils
 
 class CommentsActivity : AppCompatActivity() {
     lateinit var postID: String
+    lateinit var locationId: String
     private var isLoading = false
     private var isLastPage = false
     private var lastCommentId: String = ""
@@ -37,6 +38,7 @@ class CommentsActivity : AppCompatActivity() {
         PrefManager.getInstance(this)
 
         postID = intent.getStringExtra(Consts.KEY_POST_ID)!!
+        locationId = intent.getStringExtra(Consts.KEY_LOCATION_ID)!!
         commentsDatabaseReference = firebaseReference.getCommentsRef(postID)
 
         setupPostsRecyclerView()
@@ -64,6 +66,29 @@ class CommentsActivity : AppCompatActivity() {
 
         Toast.makeText(this, "comment added", Toast.LENGTH_LONG).show()
 
+        // update popularity score
+        firebaseReference.getLocationsRef().child(locationId).child(Consts.KEY_POSTS)
+            .child(postID).child(Consts.KEY_POPULARITY)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val pop_score = snapshot.value.toString().toDouble()
+
+                    firebaseReference.getPostsRef().child(postID).child(Consts.KEY_LIKED_USERS)
+                        .child(PrefManager.getUserId()).removeValue()
+
+                    firebaseReference.getLocationsRef().child(locationId).child(Consts.KEY_POSTS)
+                        .child(postID).child(Consts.KEY_POPULARITY)
+                        .setValue(pop_score + Consts.SCORE_COMMENT)
+
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+
+            })
+
+
         //load comments
         adapter.clearComments()
         currentPage = 1
@@ -73,7 +98,7 @@ class CommentsActivity : AppCompatActivity() {
         incrementCommentsCount(postID)
         getComments()
 
-       // Utils.sendNotificationToUser(PrefManager.getFcmToken(),"sdasd","sadasdsdfdgd")
+        // Utils.sendNotificationToUser(PrefManager.getFcmToken(),"sdasd","sadasdsdfdgd")
 
     }
 

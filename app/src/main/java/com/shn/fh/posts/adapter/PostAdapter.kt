@@ -111,6 +111,7 @@ class PostAdapter(
         holder.postIdTextView.setOnClickListener {
             val intent = Intent(context, CommentsActivity::class.java)
             intent.putExtra(Consts.KEY_POST_ID, post.postId)
+            intent.putExtra(Consts.KEY_LOCATION_ID, post.locationId)
 
             (context as Activity).startActivity(intent)
 
