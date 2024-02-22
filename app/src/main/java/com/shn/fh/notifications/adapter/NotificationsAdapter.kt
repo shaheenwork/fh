@@ -65,7 +65,7 @@ class NotificationsAdapter(
                 intent.putExtra(
                     Consts.KEY_USER_ID,
                     notification.users[notification.users.size - 1].userId
-                )
+                )  
                 (context as Activity).startActivity(intent)
             }
 
