@@ -14,8 +14,9 @@ import com.shn.fh.notifications.adapter.NotificationsAdapter
 import com.shn.fh.notifications.model.GroupedNotification
 import com.shn.fh.user.model.User
 import com.shn.fh.utils.Consts
+import com.shn.fh.utils.PrefManager
 
-class NotificationsActivity : AppCompatActivity() {
+class NotificationsActivity : AppCompatActivity(),NotificationsAdapter.onNotificationClickListener {
     private lateinit var binding: ActivityNotificationsBinding
     private var userId: String? = null
     private lateinit var firebaseReference: FirebaseReference
@@ -36,7 +37,7 @@ class NotificationsActivity : AppCompatActivity() {
     }
 
     private fun getNotifications() {
-        val databaseRef  = firebaseReference.getNotifications().child(userId!!).orderByChild(Consts.KEY_TIMESTAMP)
+        val databaseRef  = firebaseReference.getNotificationsRef().child(userId!!).orderByChild(Consts.KEY_TIMESTAMP)
         databaseRef.addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(mainSnapshot: DataSnapshot) {
@@ -49,6 +50,7 @@ class NotificationsActivity : AppCompatActivity() {
                     val timestamp: Long = dataSnapshot.child(Consts.KEY_TIMESTAMP).value.toString().toLong()
                     val action: Int = dataSnapshot.child(Consts.KEY_ACTION_NOTIFICATION).value.toString().toInt()
                     val readStatus: Int = dataSnapshot.child(Consts.KEY_READ_STATUS).value.toString().toInt()
+                    val notificationId = dataSnapshot.key.toString()
                     var postId =""
                     var locationId =""
                     if (action!=Consts.ACTION_FOLLOW) {
@@ -71,7 +73,7 @@ class NotificationsActivity : AppCompatActivity() {
                                 0,
                             )
 
-                            val notification = Notification(timestamp,action,user,postId,locationId,readStatus)
+                            val notification = Notification(timestamp,action,user,postId,notificationId,locationId,readStatus)
 
                             list.add(notification)
 
@@ -114,8 +116,9 @@ class NotificationsActivity : AppCompatActivity() {
             val (postId, action) = key
             val userIds = value.map { it.user.userId }
             val users = value.map { it.user }
-            val (timestamp, _, _, _, locationId, readStatus) = value.first() // Use details from the first notification in the group
-            GroupedNotification(postId ?: "", action, userIds, users, timestamp, locationId, readStatus)
+            val notificationIds = value.map { it.notificationIdId}
+            val (timestamp,_, _, _, _, locationId, readStatus) = value.first() // Use details from the first notification in the group
+            GroupedNotification(notificationIds,postId ?: "", action, userIds, users, timestamp, locationId, readStatus)
         }
     }
 
@@ -126,7 +129,7 @@ class NotificationsActivity : AppCompatActivity() {
 
     private fun setupRecyclerView(list: List<GroupedNotification>) {
         recyclerView = binding.rvNotif
-        adapter = NotificationsAdapter(this, userId!!, list)
+        adapter = NotificationsAdapter(this, userId!!,this ,list)
 
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
@@ -150,5 +153,16 @@ class NotificationsActivity : AppCompatActivity() {
                 }
             }
         })*/
+    }
+
+    override fun onNotificationClick(notificationIds: List<String>) {
+        updateNotificationReadStatus(notificationIds)
+    }
+
+    private fun updateNotificationReadStatus(notificationIds: List<String>) {
+        for (notification_id in notificationIds){
+          //  firebaseReference.getNotificationsRef().child(PrefManager.getUserId()).child(notification_id).child(Consts.KEY_READ_STATUS).setValue(1)
+            firebaseReference.getNotificationsRef().child("userId1").child(notification_id).child(Consts.KEY_READ_STATUS).setValue(1)
+        }
     }
 }

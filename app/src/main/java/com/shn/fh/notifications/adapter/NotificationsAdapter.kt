@@ -4,6 +4,7 @@ package com.shn.fh.notifications.adapter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,12 +24,16 @@ import com.shn.fh.utils.Utils
 class NotificationsAdapter(
     private val context: Context,
     private val userId: String,
+    private val notificationClickListener: onNotificationClickListener,
     private val notifList: List<GroupedNotification>
 ) : RecyclerView.Adapter<NotificationsAdapter.PostViewHolder>() {
 
 
     interface OnProfileClickListener {
         fun onProfileClick(userId: String)
+    }
+    interface onNotificationClickListener {
+        fun onNotificationClick(notificationIds: List<String>)
     }
 
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -55,6 +60,9 @@ class NotificationsAdapter(
 
         holder.itemView.setOnClickListener {
 
+
+            notificationClickListener.onNotificationClick(notification.notificationIds)
+
             if (notification.action == Consts.ACTION_COMMENT || notification.action == Consts.ACTION_LIKE) {
                 val intent = Intent(context, PostViewActivity::class.java)
                 intent.putExtra(Consts.KEY_POST_ID, notification.postId)
@@ -65,7 +73,7 @@ class NotificationsAdapter(
                 intent.putExtra(
                     Consts.KEY_USER_ID,
                     notification.users[notification.users.size - 1].userId
-                )  
+                )
                 (context as Activity).startActivity(intent)
             }
 
@@ -76,6 +84,8 @@ class NotificationsAdapter(
              profileClickListener.onProfileClick(users[position].userId)
          }*/
     }
+
+
 
     override fun onBindViewHolder(
         holder: PostViewHolder,

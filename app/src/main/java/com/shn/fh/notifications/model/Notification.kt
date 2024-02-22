@@ -8,6 +8,7 @@ data class Notification(
     val action: Int = Consts.ACTION_LIKE,
     val user: User = User(),
     val postId: String = "",
+    val notificationIdId: String = "",
     val locationId: String = "",
     val readStatus: Int = 0
 )
