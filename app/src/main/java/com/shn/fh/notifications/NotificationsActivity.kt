@@ -11,6 +11,7 @@ import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityNotificationsBinding
 import com.shn.fh.notifications.model.Notification
 import com.shn.fh.notifications.adapter.NotificationsAdapter
+import com.shn.fh.notifications.model.GroupedNotification
 import com.shn.fh.user.model.User
 import com.shn.fh.utils.Consts
 
@@ -35,11 +36,11 @@ class NotificationsActivity : AppCompatActivity() {
     }
 
     private fun getNotifications() {
-        var databaseRef  = firebaseReference.getNotifications().child(userId!!).orderByChild(Consts.KEY_TIMESTAMP)
+        val databaseRef  = firebaseReference.getNotifications().child(userId!!).orderByChild(Consts.KEY_TIMESTAMP)
         databaseRef.addListenerForSingleValueEvent(object :
             ValueEventListener {
             override fun onDataChange(mainSnapshot: DataSnapshot) {
-                var list:ArrayList<Notification> = ArrayList()
+                val list:ArrayList<Notification> = ArrayList()
 
 
                 for (dataSnapshot in mainSnapshot.children) {
@@ -76,7 +77,8 @@ class NotificationsActivity : AppCompatActivity() {
 
                             if (list.size == mainSnapshot.childrenCount.toInt()) {
 
-                                setupRecyclerView(list)
+                             setupRecyclerView(groupNotifications(list))
+
 
                             }
 
@@ -100,7 +102,29 @@ class NotificationsActivity : AppCompatActivity() {
         })
     }
 
-    private fun setupRecyclerView(list: List<Notification>) {
+    fun groupNotifications(notifications: List<Notification>): List<GroupedNotification> {
+        // Filter out notifications with readStatus equal to 0
+        val unreadNotifications = notifications.filter { it.readStatus == 0 }
+
+        // Group notifications by postId and action
+        val groupedNotifications = unreadNotifications.groupBy { it.postId to it.action }
+
+        // Create grouped notifications as GroupedNotification objects
+        return groupedNotifications.map { (key, value) ->
+            val (postId, action) = key
+            val userIds = value.map { it.user.userId }
+            val users = value.map { it.user }
+            val (timestamp, _, _, _, locationId, readStatus) = value.first() // Use details from the first notification in the group
+            GroupedNotification(postId ?: "", action, userIds, users, timestamp, locationId, readStatus)
+        }
+    }
+
+
+
+
+
+
+    private fun setupRecyclerView(list: List<GroupedNotification>) {
         recyclerView = binding.rvNotif
         adapter = NotificationsAdapter(this, userId!!, list)
 

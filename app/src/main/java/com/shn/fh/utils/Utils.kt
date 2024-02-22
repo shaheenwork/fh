@@ -11,9 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
-import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.RemoteMessage
 import com.shn.fh.R
+import com.shn.fh.notifications.model.GroupedNotification
+import com.shn.fh.notifications.model.Notification
 import java.util.*
 
 
@@ -33,25 +33,42 @@ class Utils {
         }
 
         fun checkIfAccessFineLocationGranted(context: Context): Boolean {
-            if (ContextCompat.checkSelfPermission(
+            return if (ContextCompat.checkSelfPermission(
                     context,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                return true
+                true
             } else {
                 Toast.makeText(
                     context,
                     context.getString(R.string.msg_location_permission_required),
                     Toast.LENGTH_LONG
                 ).show()
-                return false
+                false
             }
         }
 
          fun getLatLong(context: Context, callback: (Double, Double) -> Unit) {
             if (checkIfAccessFineLocationGranted(context)) {
                 val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+                if (ActivityCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return
+                }
                 fusedLocationClient.lastLocation
                     .addOnSuccessListener { location: Location? ->
                         if (location != null) {
@@ -89,6 +106,21 @@ class Utils {
                 }
             }
             return  action
+        }
+
+        fun getNotificationText(notification: GroupedNotification): String {
+            val actionText = getActionForNotification(notification.action)
+            return when {
+                notification.userIds.size > 2 -> {
+                    "${notification.users.last().userName} and ${notification.userIds.size - 1} others $actionText"
+                }
+                notification.userIds.size == 1 -> {
+                    "${notification.users.first().userName} $actionText"
+                }
+                else -> {
+                    "${notification.users[0].userName} and ${notification.users[1].userName} $actionText"
+                }
+            }
         }
 
 
