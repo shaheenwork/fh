@@ -143,6 +143,7 @@ class AddNewPostActivity : AppCompatActivity() {
             post.timestamp = System.currentTimeMillis()
             post.userId = PrefManager.getUserId()
 
+
             uploadPhoto(imageUri, post)
         }
 
@@ -248,8 +249,8 @@ class AddNewPostActivity : AppCompatActivity() {
         post.longt = user_lngt
         postsdatabaseReference.child(post.postId).setValue(post)
         usersdatabaseReference.child(post.userId).child(Consts.KEY_POSTS).child(post.postId).setValue(true)
-        locationdatabaseReference.child(selectedLocation).child(Consts.KEY_POSTS).child(post.postId)
-            .setValue(true)
+        locationdatabaseReference.child(selectedLocation).child(Consts.KEY_POSTS).child(post.postId).child(Consts.KEY_TIMESTAMP).setValue(System.currentTimeMillis())
+        locationdatabaseReference.child(selectedLocation).child(Consts.KEY_POSTS).child(post.postId).child(Consts.KEY_POPULARITY).setValue(post.popularity)
         Toast.makeText(this, "post added", Toast.LENGTH_LONG).show()
 
     }

@@ -18,6 +18,7 @@ data class Post(
     var liked_users: List<String> = emptyList(),
     var timestamp: Long = 0,
     var likes: Int = 0,
-    var comments: Int = 0
+    var comments: Int = 0,
+    var popularity: Double = 0.0
 )
 

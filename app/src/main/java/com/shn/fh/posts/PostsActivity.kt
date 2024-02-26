@@ -84,15 +84,13 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
 
         binding.addBtn.setOnClickListener {
 
-            val intent = Intent(this, NotificationsActivity::class.java)
-            intent.putExtra(Consts.KEY_USER_ID, PrefManager.getUserId())
-            startActivity(intent)
-/*
- val intent = Intent(this, AddNewPostActivity::class.java)
+            /* val intent = Intent(this, NotificationsActivity::class.java)
+             intent.putExtra(Consts.KEY_USER_ID, PrefManager.getUserId())
+             startActivity(intent)*/
+            val intent = Intent(this, AddNewPostActivity::class.java)
             intent.putExtra(Consts.KEY_LOCATION, selectedLocation)
             startActivity(intent)
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)
-*/
 
 
             /* when (selectedTab) {
@@ -717,31 +715,35 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
         //   incrementLikeCount(postId)
         // update popularity score
 
-            firebaseReference.getLocationsRef().child(locationId!!).child(Consts.KEY_POSTS)
-                .child(postId!!).child(Consts.KEY_POPULARITY).addListenerForSingleValueEvent(object :ValueEventListener{
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        val pop_score = snapshot.value.toString().toDouble()
-                        if (!liked) {
-                            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
-                                .child(PrefManager.getUserId()).setValue(true)
+        firebaseReference.getLocationsRef().child(locationId!!).child(Consts.KEY_POSTS)
+            .child(postId!!).child(Consts.KEY_POPULARITY)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val pop_score = snapshot.value.toString().toDouble()
+                    if (!liked) {
+                        firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
+                            .child(PrefManager.getUserId()).setValue(true)
 
-                            firebaseReference.getLocationsRef().child(locationId).child(Consts.KEY_POSTS)
-                                .child(postId).child(Consts.KEY_POPULARITY).setValue(pop_score + Consts.SCORE_LIKE)
-                        } else {
-                            firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
-                                .child(PrefManager.getUserId()).removeValue()
+                        firebaseReference.getLocationsRef().child(locationId)
+                            .child(Consts.KEY_POSTS)
+                            .child(postId).child(Consts.KEY_POPULARITY)
+                            .setValue(pop_score + Consts.SCORE_LIKE)
+                    } else {
+                        firebaseReference.getPostsRef().child(postId).child(Consts.KEY_LIKED_USERS)
+                            .child(PrefManager.getUserId()).removeValue()
 
-                            firebaseReference.getLocationsRef().child(locationId).child(Consts.KEY_POSTS)
-                                .child(postId).child(Consts.KEY_POPULARITY).setValue(pop_score - Consts.SCORE_LIKE)
-                        }
+                        firebaseReference.getLocationsRef().child(locationId)
+                            .child(Consts.KEY_POSTS)
+                            .child(postId).child(Consts.KEY_POPULARITY)
+                            .setValue(pop_score - Consts.SCORE_LIKE)
                     }
+                }
 
-                    override fun onCancelled(error: DatabaseError) {
+                override fun onCancelled(error: DatabaseError) {
 
-                    }
+                }
 
-                })
-
+            })
 
 
     }
