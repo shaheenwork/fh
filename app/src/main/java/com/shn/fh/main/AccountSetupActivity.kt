@@ -5,20 +5,17 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.shn.fh.R
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivitySetupAccountBinding
 import com.shn.fh.posts.PostsActivity
-import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.FileUtil
 import com.shn.fh.utils.PrefManager
@@ -55,7 +52,7 @@ class AccountSetupActivity : AppCompatActivity() {
             }
         }
 
-    private fun uploadPhoto(imageUri: Uri?, post: Post) {
+    private fun uploadPhoto(imageUri: Uri?) {
         // extract the file name with extension
         val sd = getFileName()
         lifecycleScope.launch {
@@ -74,7 +71,9 @@ class AccountSetupActivity : AppCompatActivity() {
 
                         // set in r db
 
-                        userDatabaseReference.child(userId).child(Consts.KEY_PROFILEPIC_URL).setValue(uri)
+                        signUpUser(uri)
+                        PrefManager.setIsLogin(true)
+                        proceedToMainActivity()
 
 
                     }.addOnFailureListener { // Handle any errors
@@ -103,6 +102,9 @@ class AccountSetupActivity : AppCompatActivity() {
         binding = ActivitySetupAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        storageRef = FirebaseStorage.getInstance().reference.child("profile_pics")
+
+
         name = intent.getStringExtra(Consts.KEY_DISPLAY_NAME)!!
         email = intent.getStringExtra(Consts.KEY_EMAIL)!!
       //  photoUrl = intent.getStringExtra(Consts.KEY_PHOTO_URL)!!
@@ -117,9 +119,7 @@ class AccountSetupActivity : AppCompatActivity() {
         binding.btnSave.setOnClickListener {
             if (binding.etName.text.toString().isNotEmpty()) {
 
-                signUpUser()
-                PrefManager.setIsLogin(true)
-                proceedToMainActivity()
+                uploadPhoto(imageUri)
 
 
             }
@@ -134,10 +134,10 @@ class AccountSetupActivity : AppCompatActivity() {
 
     }
 
-    private fun signUpUser() {
+    private fun signUpUser(uri: Uri) {
         userDatabaseReference.child(userId).child(Consts.KEY_EMAIL).setValue(email)
         userDatabaseReference.child(userId).child(Consts.KEY_DISPLAY_NAME).setValue(name)
-      //  userDatabaseReference.child(userId).child(Consts.KEY_PHOTO_URL).setValue(photoUrl)
+        userDatabaseReference.child(userId).child(Consts.KEY_PROFILEPIC_URL).setValue(uri.toString())
 
     }
 
