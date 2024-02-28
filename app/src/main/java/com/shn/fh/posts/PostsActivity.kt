@@ -19,6 +19,7 @@ import com.shn.fh.R
 import com.shn.fh.user.UserViewActivity
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityMainBinding
+import com.shn.fh.main.AccountSetupActivity
 import com.shn.fh.notifications.NotificationsActivity
 import com.shn.fh.posts.models.Location
 import com.shn.fh.posts.models.Post
@@ -87,10 +88,14 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
             /* val intent = Intent(this, NotificationsActivity::class.java)
              intent.putExtra(Consts.KEY_USER_ID, PrefManager.getUserId())
              startActivity(intent)*/
-            val intent = Intent(this, AddNewPostActivity::class.java)
-            intent.putExtra(Consts.KEY_LOCATION, selectedLocation)
+            /*   val intent = Intent(this, AddNewPostActivity::class.java)
+               intent.putExtra(Consts.KEY_LOCATION, selectedLocation)
+               startActivity(intent)
+               overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)*/
+
+            val intent = Intent(this, AccountSetupActivity::class.java)
+            intent.putExtra(Consts.KEY_PROFILE_EDIT_SETUP, Consts.FLAG_EDIT_PROFILE)
             startActivity(intent)
-            overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)
 
 
             /* when (selectedTab) {

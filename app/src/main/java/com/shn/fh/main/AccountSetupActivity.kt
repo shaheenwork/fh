@@ -10,7 +10,10 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.shn.fh.databaseReference.FirebaseReference
@@ -29,8 +32,8 @@ class AccountSetupActivity : AppCompatActivity() {
     private lateinit var userDatabaseReference: DatabaseReference
     private lateinit var name: String
     private lateinit var email: String
-    private lateinit var userId: String
     private lateinit var actualImage: File
+    private var editOrSetup = Consts.FLAG_SETUP_PROFILE
     val galleryIntent = Intent(Intent.ACTION_PICK)
 
     //photo
@@ -102,18 +105,52 @@ class AccountSetupActivity : AppCompatActivity() {
         binding = ActivitySetupAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        storageRef = FirebaseStorage.getInstance().reference.child("profile_pics")
+        editOrSetup = intent.getIntExtra(Consts.KEY_PROFILE_EDIT_SETUP,Consts.FLAG_SETUP_PROFILE)
 
-
-        name = intent.getStringExtra(Consts.KEY_DISPLAY_NAME)!!
-        email = intent.getStringExtra(Consts.KEY_EMAIL)!!
-      //  photoUrl = intent.getStringExtra(Consts.KEY_PHOTO_URL)!!
-        userId = intent.getStringExtra(Consts.KEY_USER_ID)!!
-
-        binding.etName.setText(name)
-
+        PrefManager.getInstance(this)
         firebaseDatabase = FirebaseReference()
         userDatabaseReference = firebaseDatabase.getUsersRef()
+
+        if (editOrSetup == Consts.FLAG_EDIT_PROFILE){
+            // get user details set in view
+
+            userDatabaseReference.child(PrefManager.getUserId()).addListenerForSingleValueEvent(object:ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+
+                    name = snapshot.child(Consts.KEY_DISPLAY_NAME).value.toString()
+                    val bio = snapshot.child(Consts.KEY_USER_BIO).value.toString()
+                    val profilePic = snapshot.child(Consts.KEY_PROFILEPIC_URL).value.toString()
+
+                    binding.etName.setText(name)
+
+                    Glide.with(this@AccountSetupActivity)
+                        .load(profilePic)
+                        .into(binding.ivProfile)
+
+
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+
+                }
+
+
+            })
+
+        }
+        else{
+
+            name = intent.getStringExtra(Consts.KEY_DISPLAY_NAME)!!
+            email = intent.getStringExtra(Consts.KEY_EMAIL)!!
+            //  photoUrl = intent.getStringExtra(Consts.KEY_PHOTO_URL)!!
+
+            binding.etName.setText(name)
+
+        }
+
+
+        storageRef = FirebaseStorage.getInstance().reference.child("profile_pics")
 
 
         binding.btnSave.setOnClickListener {
@@ -135,9 +172,12 @@ class AccountSetupActivity : AppCompatActivity() {
     }
 
     private fun signUpUser(uri: Uri) {
-        userDatabaseReference.child(userId).child(Consts.KEY_EMAIL).setValue(email)
-        userDatabaseReference.child(userId).child(Consts.KEY_DISPLAY_NAME).setValue(name)
-        userDatabaseReference.child(userId).child(Consts.KEY_PROFILEPIC_URL).setValue(uri.toString())
+        if (editOrSetup == Consts.FLAG_SETUP_PROFILE) {
+            userDatabaseReference.child(PrefManager.getUserId()).child(Consts.KEY_EMAIL)
+                .setValue(email)
+        }
+        userDatabaseReference.child(PrefManager.getUserId()).child(Consts.KEY_DISPLAY_NAME).setValue(binding.etName.text.toString())
+        userDatabaseReference.child(PrefManager.getUserId()).child(Consts.KEY_PROFILEPIC_URL).setValue(uri.toString())
 
     }
 

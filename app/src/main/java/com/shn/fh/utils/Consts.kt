@@ -10,6 +10,10 @@ object Consts {
     const val FLAG_FOLLOWING = 1
     const val KEY_FOLLOWERS_OR_FOLLOWING = "follower_or_following"
 
+    const val KEY_PROFILE_EDIT_SETUP = "profile_edit_or_setup"
+    const val FLAG_EDIT_PROFILE = 0
+    const val FLAG_SETUP_PROFILE = 1
+
 
     const val ACTION_LIKE = 0
     const val ACTION_FOLLOW = 1
