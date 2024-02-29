@@ -85,17 +85,17 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
 
         binding.addBtn.setOnClickListener {
 
-            /* val intent = Intent(this, NotificationsActivity::class.java)
+             val intent = Intent(this, NotificationsActivity::class.java)
              intent.putExtra(Consts.KEY_USER_ID, PrefManager.getUserId())
-             startActivity(intent)*/
+             startActivity(intent)
             /*   val intent = Intent(this, AddNewPostActivity::class.java)
                intent.putExtra(Consts.KEY_LOCATION, selectedLocation)
                startActivity(intent)
                overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)*/
 
-            val intent = Intent(this, AccountSetupActivity::class.java)
+            /*val intent = Intent(this, AccountSetupActivity::class.java)
             intent.putExtra(Consts.KEY_PROFILE_EDIT_SETUP, Consts.FLAG_EDIT_PROFILE)
-            startActivity(intent)
+            startActivity(intent)*/
 
 
             /* when (selectedTab) {

@@ -69,7 +69,7 @@ class AccountSetupActivity : AppCompatActivity() {
             // On success, download the file URL and display it
             uploadTask.addOnSuccessListener {
 
-                (storageRef!!.child(sd!!).downloadUrl
+                (storageRef!!.child(sd).downloadUrl
                     .addOnSuccessListener { uri ->
 
                         // set in r db

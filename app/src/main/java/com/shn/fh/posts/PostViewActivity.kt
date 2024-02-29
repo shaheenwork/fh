@@ -28,22 +28,35 @@ class PostViewActivity : AppCompatActivity() {
     private var postId: String? = null
     private var locationId: String? = null
     private lateinit var firebaseReference: FirebaseReference
+    private var deepLink:Boolean=false
     val PAYLOAD_LIKE = "PAYLOAD_LIKE"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPostViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        PrefManager.getInstance(this)
-        postId = intent.getStringExtra(Consts.KEY_POST_ID)
-        locationId = intent.getStringExtra(Consts.KEY_LOCATION_ID)
-        firebaseReference = FirebaseReference()
-
-        getPost()
-
+        if (!deepLink) {
+            postId = intent.getStringExtra(Consts.KEY_POST_ID)
+            locationId = intent.getStringExtra(Consts.KEY_LOCATION_ID)
+            //getPost()
+        }
+        if (postId!=null){
+            getPost()
+        }
+        else {
+            handleDeepLink(intent)
+        }
     }
 
+    private fun init() {
+        PrefManager.getInstance(this)
+        firebaseReference = FirebaseReference()
+    }
+
+
     private fun getPost() {
+
+        init()
+
         val databaseRef = firebaseReference.getPostsRef().child(postId!!)
         databaseRef.addListenerForSingleValueEvent(object :
             ValueEventListener {
@@ -190,7 +203,8 @@ class PostViewActivity : AppCompatActivity() {
             val liked = post.liked_users.contains(PrefManager.getUserId())
 
             firebaseReference.getLocationsRef().child(locationId!!).child(Consts.KEY_POSTS)
-                .child(postId!!).child(Consts.KEY_POPULARITY).addListenerForSingleValueEvent(object :ValueEventListener {
+                .child(postId!!).child(Consts.KEY_POPULARITY)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val pop_score = snapshot.value.toString().toDouble()
 
@@ -233,7 +247,12 @@ class PostViewActivity : AppCompatActivity() {
                                 )
                             );
                         } else {
-                            likeIcon.setColorFilter(ContextCompat.getColor(this@PostViewActivity, R.color.black));
+                            likeIcon.setColorFilter(
+                                ContextCompat.getColor(
+                                    this@PostViewActivity,
+                                    R.color.black
+                                )
+                            );
                         }
                         likeCountTextView.text = (post.liked_users.size).toString() + " likes"
                     }
@@ -249,4 +268,21 @@ class PostViewActivity : AppCompatActivity() {
             // profileClickListener.onProfileClick(post.userId)
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleDeepLink(intent)
+    }
+
+    private fun handleDeepLink(intent: Intent?) {
+        deepLink = true
+        intent?.data?.let { uri ->
+            if (uri.scheme == "app" && uri.host == "example.com") {
+                postId = uri.lastPathSegment
+                getPost()
+            }
+        }
+    }
 }
+
+
