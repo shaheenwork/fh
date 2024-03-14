@@ -55,6 +55,7 @@ class AccountSetupActivity : AppCompatActivity() {
             }
         }
 
+/*
     private fun uploadPhoto(imageUri: Uri?) {
         // extract the file name with extension
         val sd = getFileName()
@@ -90,9 +91,62 @@ class AccountSetupActivity : AppCompatActivity() {
             }.addOnFailureListener {
                 Log.e("Firebase", "Image Upload fail")
             }
+
+
+
         }
 
     }
+*/
+
+    private fun uploadPhoto(imageUri: Uri?) {
+        // extract the file name with extension
+        val sd = getFileName()
+        lifecycleScope.launch {
+            val compressedImageFile = Compressor.compress(this@AccountSetupActivity, actualImage)
+
+            // Upload Task with upload to directory 'file'
+            // and name of the file remains the same
+            val uploadTask = storageRef!!.child("$sd").putFile(Uri.fromFile(compressedImageFile))
+
+            // Add progress listener
+            uploadTask.addOnProgressListener { taskSnapshot ->
+                val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount)
+                Log.d("Upload Progress", "Upload is $progress% done")
+
+            }
+
+            // On success, download the file URL and display it
+            uploadTask.addOnSuccessListener {
+
+                (storageRef!!.child(sd).downloadUrl
+                    .addOnSuccessListener { uri ->
+
+                        // set in r db
+
+                        signUpUser(uri)
+                        PrefManager.setIsLogin(true)
+                        proceedToMainActivity()
+
+
+                    }.addOnFailureListener { // Handle any errors
+                        // hideProgressDialog()
+                        Toast.makeText(
+                            applicationContext,
+                            "Something went wrong",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    })
+            }.addOnFailureListener {
+                Log.e("Firebase", "Image Upload fail")
+            }
+
+
+
+        }
+
+    }
+
 
     private fun getFileName(): String {
 

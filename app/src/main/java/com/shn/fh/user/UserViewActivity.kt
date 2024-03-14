@@ -15,6 +15,7 @@ import com.google.firebase.database.ValueEventListener
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityUserViewBinding
 import com.shn.fh.posts.adapter.PostAdapter
+import com.shn.fh.posts.models.ParcelableCarouselItem
 import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
@@ -195,8 +196,7 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                         override fun onDataChange(snapshot: DataSnapshot) {
                             // Skip the post if it doesn't match the search term
                             if (searchTerm.isNotEmpty() &&
-                                !snapshot.child(Consts.KEY_DESCRIPTION).value.toString()
-                                    .contains(searchTerm, ignoreCase = true)
+                                !snapshot.child(Consts.KEY_DESCRIPTION).value.toString().contains(searchTerm, ignoreCase = true)
                             ) {
                                 notIncludedPostCount++
                                 if (newPosts.size == (dataSnapshot.childrenCount.toInt() - notIncludedPostCount)) {
@@ -214,6 +214,7 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                                 return
                             }
 
+                            //rio//ator//orai//manta//rlc//
                             val post = Post()
                             post.postId = postId
                             post.comments =
@@ -231,12 +232,12 @@ class UserViewActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                                 snapshot.child(Consts.KEY_LONGITUDE).value.toString().toDouble()
 
                             // Retrieve photo URLs as a list
-                            val photoSlides = ArrayList<CarouselItem>()
+                            val photoSlides = ArrayList<ParcelableCarouselItem>()
                             //  val photoUrlsList = mutableListOf<String>()
                             for (photoSnapshot in snapshot.child(Consts.KEY_PHOTO_URLS).children) {
                                 val photoUrl = photoSnapshot.value.toString()
                                 //   photoUrlsList.add(photoUrl)
-                                photoSlides.add(CarouselItem(photoUrl, ""))
+                                photoSlides.add(ParcelableCarouselItem(photoUrl, ""))
                             }
                             post.photoSlides = photoSlides
 

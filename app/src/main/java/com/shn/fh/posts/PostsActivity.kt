@@ -24,6 +24,7 @@ import com.shn.fh.notifications.NotificationsActivity
 import com.shn.fh.posts.models.Location
 import com.shn.fh.posts.models.Post
 import com.shn.fh.posts.adapter.PostAdapter
+import com.shn.fh.posts.models.ParcelableCarouselItem
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
 import com.shn.fh.utils.Utils
@@ -85,13 +86,13 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
 
         binding.addBtn.setOnClickListener {
 
-             val intent = Intent(this, NotificationsActivity::class.java)
+            /* val intent = Intent(this, NotificationsActivity::class.java)
              intent.putExtra(Consts.KEY_USER_ID, PrefManager.getUserId())
-             startActivity(intent)
-            /*   val intent = Intent(this, AddNewPostActivity::class.java)
+             startActivity(intent)*/
+               val intent = Intent(this, AddNewPostActivity::class.java)
                intent.putExtra(Consts.KEY_LOCATION, selectedLocation)
                startActivity(intent)
-               overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)*/
+               overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_down)
 
             /*val intent = Intent(this, AccountSetupActivity::class.java)
             intent.putExtra(Consts.KEY_PROFILE_EDIT_SETUP, Consts.FLAG_EDIT_PROFILE)
@@ -449,12 +450,12 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                                     snapshot.child(Consts.KEY_LONGITUDE).value.toString().toDouble()
 
                                 // Retrieve photo URLs as a list
-                                val photoSlides = ArrayList<CarouselItem>()
+                                val photoSlides = ArrayList<ParcelableCarouselItem>()
                                 //  val photoUrlsList = mutableListOf<String>()
                                 for (photoSnapshot in snapshot.child(Consts.KEY_PHOTO_URLS).children) {
                                     val photoUrl = photoSnapshot.value.toString()
                                     //   photoUrlsList.add(photoUrl)
-                                    photoSlides.add(CarouselItem(photoUrl, ""))
+                                    photoSlides.add(ParcelableCarouselItem(photoUrl, ""))
                                 }
                                 post.photoSlides = photoSlides
 
@@ -598,12 +599,12 @@ class PostsActivity : AppCompatActivity(), PostAdapter.OnLikeClickListener,
                                     .toDouble()
 
                             // Retrieve photo URLs as a list
-                            val photoSlides = ArrayList<CarouselItem>()
+                            val photoSlides = ArrayList<ParcelableCarouselItem>()
                             //  val photoUrlsList = mutableListOf<String>()
                             for (photoSnapshot in snapshot.child(Consts.KEY_PHOTO_URLS).children) {
                                 val photoUrl = photoSnapshot.value.toString()
                                 //   photoUrlsList.add(photoUrl)
-                                photoSlides.add(CarouselItem(photoUrl, ""))
+                                photoSlides.add(ParcelableCarouselItem(photoUrl, ""))
                             }
                             post.photoSlides = photoSlides
 

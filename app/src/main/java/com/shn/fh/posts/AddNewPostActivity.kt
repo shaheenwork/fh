@@ -19,6 +19,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -32,6 +33,8 @@ import com.shn.fh.databinding.ActivityAddNewPostBinding
 import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
+import com.shn.fh.utils.UpService
+import com.shn.fh.utils.UploadService
 import id.zelory.compressor.Compressor
 import kotlinx.coroutines.launch
 import java.io.File
@@ -74,13 +77,12 @@ class AddNewPostActivity : AppCompatActivity() {
             }
         }
 
-    private fun uploadPhoto(imageUri: Uri?, post: Post) {
+    private fun uploadPhoto(post: Post) {
         // extract the file name with extension
         val sd = getFileName()
         lifecycleScope.launch {
-            val compressedImageFile = Compressor.compress(this@AddNewPostActivity, actualImage)
-
-
+          //  val compressedImageFile = Compressor.compress(this@AddNewPostActivity, actualImage)
+/*
             // Upload Task with upload to directory 'file'
             // and name of the file remains same
             val uploadTask = storageRef!!.child("$sd").putFile(Uri.fromFile(compressedImageFile))
@@ -102,7 +104,18 @@ class AddNewPostActivity : AppCompatActivity() {
                     })
             }.addOnFailureListener {
                 Log.e("Firebase", "Image Upload fail")
-            }
+            }*/
+
+            val intent = Intent(this@AddNewPostActivity, UpService::class.java)
+            intent.putExtra("imagePath", imageUri!!.path)
+            intent.putExtra("post",post)
+            intent.putExtra("selectedLocation",selectedLocation)
+            intent.putExtra("lat",user_lat)
+            intent.putExtra("longt",user_lngt)
+            startService(intent)
+
+
+
         }
 
     }
@@ -144,7 +157,11 @@ class AddNewPostActivity : AppCompatActivity() {
             post.userId = PrefManager.getUserId()
 
 
-            uploadPhoto(imageUri, post)
+            uploadPhoto( post)
+
+
+
+
         }
 
 

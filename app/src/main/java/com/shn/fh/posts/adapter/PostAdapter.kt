@@ -15,10 +15,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.shn.fh.R
 import com.shn.fh.posts.comments.CommentsActivity
+import com.shn.fh.posts.models.ParcelableCarouselItem
 import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.Utils
 import org.imaginativeworld.whynotimagecarousel.ImageCarousel
+import org.imaginativeworld.whynotimagecarousel.model.CarouselItem
 
 
 // PostAdapter.kt
@@ -29,6 +31,7 @@ class PostAdapter(
     private val profileClickListener: OnProfileClickListener
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
+    private lateinit var photoSlides: ArrayList<CarouselItem>
     private val posts: MutableList<Post> = mutableListOf()
     val PAYLOAD_LIKE = "PAYLOAD_LIKE"
 
@@ -97,7 +100,12 @@ class PostAdapter(
         holder.photoRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
         holder.photoRecyclerView.adapter = photoAdapter
 */
-        holder.imageSlider.setData(post.photoSlides)
+        photoSlides=ArrayList()
+        for (item: ParcelableCarouselItem in post.photoSlides) {
+            photoSlides.add(CarouselItem(item.image, item.caption))
+        }
+
+        holder.imageSlider.setData(photoSlides)
         holder.imageSlider.showTopShadow = false
         holder.imageSlider.showCaption = false
         holder.imageSlider.showNavigationButtons = false
@@ -129,7 +137,7 @@ class PostAdapter(
                 new.add(userId)
                 posts[position].liked_users = new
             }
-            notifyItemChanged(position,PAYLOAD_LIKE)
+            notifyItemChanged(position, PAYLOAD_LIKE)
             likeListener.onLikeClick(posts[position].locationId, posts[position].postId, liked)
         }
 
@@ -145,17 +153,31 @@ class PostAdapter(
     ) {
         if (payloads.isNotEmpty()) {
 
-           for (payload in payloads){
-               if (payload == PAYLOAD_LIKE){
-                   //like button color change
-                   if (posts[position].liked_users.isNotEmpty() && posts[position].liked_users.contains(userId)) {
-                       holder.likeIcon.setColorFilter(ContextCompat.getColor(context, R.color.purple_500));
-                   } else {
-                       holder.likeIcon.setColorFilter(ContextCompat.getColor(context, R.color.black));
-                   }
-                   holder.likeCountTextView.text = (posts[position].liked_users.size).toString() + " likes"
-               }
-           }
+            for (payload in payloads) {
+                if (payload == PAYLOAD_LIKE) {
+                    //like button color change
+                    if (posts[position].liked_users.isNotEmpty() && posts[position].liked_users.contains(
+                            userId
+                        )
+                    ) {
+                        holder.likeIcon.setColorFilter(
+                            ContextCompat.getColor(
+                                context,
+                                R.color.purple_500
+                            )
+                        );
+                    } else {
+                        holder.likeIcon.setColorFilter(
+                            ContextCompat.getColor(
+                                context,
+                                R.color.black
+                            )
+                        );
+                    }
+                    holder.likeCountTextView.text =
+                        (posts[position].liked_users.size).toString() + " likes"
+                }
+            }
 
 
         } else {
@@ -177,7 +199,7 @@ class PostAdapter(
         } else {
             posts.addAll(newPosts)
         }
-        Log.d("shnlog","postnumber: "+posts.size.toString())
+        Log.d("shnlog", "postnumber: " + posts.size.toString())
         notifyDataSetChanged()
     }
 

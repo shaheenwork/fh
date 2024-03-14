@@ -16,6 +16,7 @@ import com.shn.fh.R
 import com.shn.fh.databaseReference.FirebaseReference
 import com.shn.fh.databinding.ActivityPostViewBinding
 import com.shn.fh.posts.comments.CommentsActivity
+import com.shn.fh.posts.models.ParcelableCarouselItem
 import com.shn.fh.posts.models.Post
 import com.shn.fh.utils.Consts
 import com.shn.fh.utils.PrefManager
@@ -83,12 +84,12 @@ class PostViewActivity : AppCompatActivity() {
                         .toDouble()
 
                 // Retrieve photo URLs as a list
-                val photoSlides = ArrayList<CarouselItem>()
+                val photoSlides = ArrayList<ParcelableCarouselItem>()
                 //  val photoUrlsList = mutableListOf<String>()
                 for (photoSnapshot in snapshot.child(Consts.KEY_PHOTO_URLS).children) {
                     val photoUrl = photoSnapshot.value.toString()
                     //   photoUrlsList.add(photoUrl)
-                    photoSlides.add(CarouselItem(photoUrl, ""))
+                    photoSlides.add(ParcelableCarouselItem(photoUrl, ""))
                 }
                 post.photoSlides = photoSlides
 
@@ -177,7 +178,7 @@ class PostViewActivity : AppCompatActivity() {
         photoRecyclerView.layoutManager = LinearLayoutManager(itemView.this, LinearLayoutManager.HORIZONTAL, false)
         photoRecyclerView.adapter = photoAdapter
 */
-        imageSlider.setData(post.photoSlides)
+        imageSlider.setData(post.photoSlides as List<CarouselItem>)
         imageSlider.showTopShadow = false
         imageSlider.showCaption = false
         imageSlider.showNavigationButtons = false
